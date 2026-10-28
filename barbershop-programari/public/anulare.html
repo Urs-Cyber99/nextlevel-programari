@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Programarea ta</title>
+<meta name="theme-color" content="#0b0b0c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0c;--panel:#141416;--line:#2a2a2e;--line2:#3a3a40;--ink:#f4f3f1;--muted:#9b9aa1;--ok:#7fd8a6;--err:#ff8a7a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,sans-serif}
+.card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:30px 24px;text-align:center}
+.mono{width:52px;height:52px;margin:0 auto 14px;display:grid;place-items:center;font:700 18px Cinzel,serif;background:var(--ink);color:var(--bg);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+h1{font:700 24px Cinzel,serif;letter-spacing:.05em;margin-bottom:4px}
+p{color:var(--muted)}
+.sum{margin:20px 0;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;display:grid;gap:6px;font-size:14px}
+.sum div{display:flex;justify-content:space-between;gap:12px}.sum span{color:var(--muted)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:48px;border-radius:999px;border:0;font:700 15px Manrope,sans-serif;cursor:pointer;text-decoration:none;margin-top:10px}
+.danger{background:var(--err);color:#1a0a08}.ghost{background:none;color:var(--ink);border:1px solid var(--line2)}
+.btn[disabled]{opacity:.4}
+.badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;margin-top:10px}
+.badge.ok{background:rgba(127,216,166,.15);color:var(--ok)}.badge.x{background:rgba(255,138,122,.15);color:var(--err)}
+.err{color:var(--err);font-size:14px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="card" id="card"><div class="mono">NL</div><p>Se încarcă…</p></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ZILE = ["duminică", "luni", "marți", "miercuri", "joi", "vineri", "sâmbătă"];
+const LUNI = ["ianuarie", "februarie", "martie", "aprilie", "mai", "iunie", "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"];
+const longDate = (d) => { const x = new Date(d + "T12:00:00Z"); return `${ZILE[x.getUTCDay()]}, ${x.getUTCDate()} ${LUNI[x.getUTCMonth()]}`; };
+const token = location.pathname.split("/a/")[1]?.replace(/\W/g, "") || new URLSearchParams(location.search).get("t");
+const STATUS = { confirmed: ["Confirmată", "ok"], cancelled: ["Anulată", "x"], done: ["Finalizată", "ok"], noshow: ["Neprezentat", "x"] };
+
+async function api(path, body) {
+  const res = await fetch("/api/" + path, body ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : {});
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Eroare");
+  return data;
+}
+
+function render({ booking: b, canCancel, salon }, msg) {
+  const [label, cls] = STATUS[b.status] || [b.status, "ok"];
+  const call = salon.phone ? `<a class="btn ghost" href="tel:${esc(salon.phone.replace(/\s/g, ""))}">Sună la salon</a>` : "";
+  $("#card").innerHTML = `
+    <div class="mono">NL</div>
+    <h1>${esc(salon.salonName)}</h1>
+    <p>Salut, ${esc(b.name.split(" ")[0])}!</p>
+    <span class="badge ${cls}">${label}</span>
+    <div class="sum">
+      <div><span>Serviciu</span><b>${esc(b.serviceName)}</b></div>
+      <div><span>Frizer</span><b>${esc(b.barberName)}</b></div>
+      <div><span>Când</span><b>${longDate(b.date)}, ${b.start}</b></div>
+    </div>
+    ${msg ? `<p>${esc(msg)}</p>` : ""}
+    ${canCancel ? `<button class="btn danger" id="cancel">Anulează programarea</button>` :
+      b.status === "confirmed" ? `<p>Anularea online e posibilă până cu ${salon.cancelHours} ore înainte. Te rugăm să ne suni.</p>` : ""}
+    ${call}
+    <a class="btn ghost" href="/#programare">${b.status === "cancelled" ? "Fă o programare nouă" : "Înapoi la site"}</a>
+    <div class="err" id="err"></div>`;
+  const c = $("#cancel");
+  if (c) c.onclick = async () => {
+    if (!confirm("Sigur anulezi programarea?")) return;
+    c.disabled = true; c.textContent = "Se anulează…";
+    try {
+      await api("cancel", { t: token });
+      render(await api("booking?t=" + token), "Programarea a fost anulată. Mulțumim că ne-ai anunțat!");
+    } catch (e) { $("#err").textContent = e.message; c.disabled = false; c.textContent = "Anulează programarea"; }
+  };
+}
+
+if (!token) $("#card").innerHTML = '<div class="mono">NL</div><h1>Link invalid</h1><p>Verifică linkul din SMS.</p>';
+else api("booking?t=" + token).then((d) => render(d))
+  .catch((e) => ($("#card").innerHTML = `<div class="mono">NL</div><h1>Ups</h1><p>${esc(e.message)}</p><a class="btn ghost" href="/">Înapoi la site</a>`));
+</script>
+</body>
+</html>

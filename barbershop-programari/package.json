@@ -1,0 +1,16 @@
+{
+  "name": "barbershop-programari",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Programări online pentru frizerie: calendar, panou admin, SMS reminder (SMSLink).",
+  "scripts": {
+    "test": "MOCK_STORE=1 ADMIN_PASSWORD=test node test/test.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": ">=8.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

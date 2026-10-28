@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Next Level Barbershop · Programări online</title>
+<meta name="description" content="Programează-te online la Next Level Barbershop: tuns, barbă, pachet exclusiv. Alege frizerul și ora, primești SMS de confirmare și reminder.">
+<meta name="theme-color" content="#0b0b0c">
+<meta property="og:title" content="Next Level Barbershop · Programări online">
+<meta property="og:description" content="Alege serviciul, frizerul și ora. Confirmare și reminder prin SMS.">
+<meta property="og:image" content="/img/salon-hero.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 3 57 17.5v29L32 61 7 46.5v-29z' fill='%230b0b0c' stroke='%23fff' stroke-width='3'/%3E%3Ctext x='32' y='42' font-family='serif' font-size='26' fill='%23fff' text-anchor='middle'%3ENL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0b0c; --panel:#141416; --panel2:#1b1b1e; --line:#2a2a2e; --line2:#3a3a40;
+  --ink:#f4f3f1; --muted:#9b9aa1; --dim:#6c6b72; --glow:#ffffff; --ok:#7fd8a6; --err:#ff8a7a;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.serif{font-family:Cinzel,serif;letter-spacing:.06em}
+
+/* header */
+header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.mono{width:38px;height:38px;display:grid;place-items:center;font:700 15px Cinzel,serif;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--ink);color:var(--bg)}
+.brand b{font:700 17px Cinzel,serif;letter-spacing:.14em}
+.brand small{display:block;font-size:10px;letter-spacing:.32em;color:var(--muted);text-transform:uppercase;margin-top:-2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;
+  background:var(--ink);color:var(--bg);font-weight:700;text-decoration:none;transition:transform .15s,opacity .15s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.btn.sm{height:38px;padding:0 16px;font-size:14px}
+.btn[disabled]{opacity:.35;pointer-events:none}
+
+/* hero */
+.hero{position:relative;min-height:min(78vh,640px);display:flex;align-items:flex-end;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,11,12,.35) 0%,rgba(11,11,12,.6) 45%,rgba(11,11,12,.92) 82%,var(--bg) 100%)}
+.hex{position:absolute;top:-40px;right:-60px;width:420px;opacity:.5;z-index:1;filter:drop-shadow(0 0 6px rgba(255,255,255,.7))}
+.hero .wrap{position:relative;z-index:2;padding-bottom:48px;width:100%}
+.eyebrow{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.hero h1{font:700 clamp(42px,9vw,88px)/.95 Cinzel,serif;letter-spacing:.04em;margin:14px 0 16px}
+.hero h1 span{display:block}
+.hero h1 span+span{font-size:.42em;letter-spacing:.42em;font-weight:500;margin-top:10px;color:#d9d8dc}
+.hero p{max-width:440px;color:#cfced3;margin-bottom:26px}
+.hero .row{display:flex;gap:10px;flex-wrap:wrap}
+.facts{display:flex;gap:22px;flex-wrap:wrap;margin-top:28px;font-size:14px;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:600}
+
+section{padding:64px 0}
+h2{font:700 clamp(26px,5vw,38px)/1.1 Cinzel,serif;letter-spacing:.05em;margin-bottom:8px}
+.lead{color:var(--muted);margin-bottom:28px}
+
+/* booking */
+.book{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.step{border-bottom:1px solid var(--line);scroll-margin-top:76px}
+.step:last-child{border-bottom:0}
+.step-h{display:flex;align-items:center;gap:14px;padding:18px 20px;width:100%;text-align:left}
+.num{flex:none;width:30px;height:30px;display:grid;place-items:center;font-size:13px;font-weight:700;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--line2);color:var(--muted)}
+.step.active .num{background:var(--ink);color:var(--bg)}
+.step.done .num{background:var(--ok);color:var(--bg)}
+.step-t{flex:1;min-width:0}
+.step-t b{display:block;font-weight:700}
+.step-t small{display:block;color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step-h .chg{font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.step-b{display:none;padding:0 20px 22px}
+.step.active .step-b{display:block;animation:in .25s ease}
+.step:not(.done):not(.active) .step-h{opacity:.45;pointer-events:none}
+.step.active .chg{display:none}
+@keyframes in{from{opacity:0;transform:translateY(-4px)}}
+
+.svc{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.opt{display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);text-align:left;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--line2)}
+.opt.sel{border-color:var(--ink);background:#232327}
+.opt .t{flex:1;min-width:0}
+.opt .t b{display:block}
+.opt .t small{display:block;color:var(--muted);font-size:13px}
+.opt .meta{text-align:right;font-size:13px;color:var(--muted);white-space:nowrap}
+.opt .meta b{display:block;color:var(--ink);font-size:15px}
+
+.barbers{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.barber{flex-direction:column;text-align:center;gap:10px;padding:18px 12px}
+.av{width:58px;height:58px;display:grid;place-items:center;font:700 20px Cinzel,serif;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(160deg,#3a3a40,#1e1e22);color:var(--ink)}
+.barber.sel .av{background:var(--ink);color:var(--bg)}
+.av.any{font:600 22px Manrope}
+.barber small{color:var(--muted);font-size:12px}
+
+.dates{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:thin}
+.date{flex:none;width:68px;padding:10px 0;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);text-align:center;scroll-snap-align:start}
+.date small{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.date b{display:block;font-size:22px;line-height:1.2}
+.date i{display:block;font-style:normal;font-size:11px;color:var(--muted)}
+.date.sel{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.date.sel small,.date.sel i{color:#55545a}
+.date[disabled]{opacity:.3;pointer-events:none}
+.date[disabled] i{color:var(--err)}
+
+.slots-g{margin-top:6px}
+.slots-g h4{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:14px 0 8px}
+.slots{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+.slot{height:44px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);font-weight:600;font-variant-numeric:tabular-nums}
+.slot:hover{border-color:var(--line2)}
+.slot.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1px dashed var(--line2);border-radius:var(--r)}
+
+.form{display:grid;gap:14px;max-width:520px}
+label.f span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+input[type=text],input[type=tel]{width:100%;height:50px;padding:0 16px;border-radius:12px;border:1px solid var(--line2);background:var(--bg);color:var(--ink);font:inherit;font-size:16px}
+input:focus{outline:2px solid var(--ink);outline-offset:1px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)}
+.check input{margin-top:3px;width:18px;height:18px;accent-color:#fff;flex:none}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.summary{border:1px solid var(--line);border-radius:var(--r);padding:16px;background:var(--panel2);display:grid;gap:6px;font-size:14px}
+.summary div{display:flex;justify-content:space-between;gap:12px}
+.summary span{color:var(--muted)}
+.err{color:var(--err);font-size:14px;min-height:1px}
+.spin{width:22px;height:22px;border:2px solid var(--line2);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite;margin:18px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.done-card{padding:34px 22px;text-align:center;display:none}
+.done-card.show{display:block;animation:in .3s ease}
+.tick{width:66px;height:66px;margin:0 auto 18px;display:grid;place-items:center;font-size:30px;color:var(--bg);background:var(--ok);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.done-card h3{font:700 26px Cinzel,serif;margin-bottom:6px}
+.done-card .summary{max-width:420px;margin:20px auto;text-align:left}
+.done-card .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* team, gallery, prices */
+.team{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.member{padding:24px;border:1px solid var(--line);border-radius:18px;background:var(--panel);display:flex;align-items:center;gap:16px}
+.member .av{width:64px;height:64px}
+.member b{display:block;font:700 18px Cinzel,serif;letter-spacing:.06em}
+.member small{color:var(--muted);font-size:13px}
+.gallery{display:grid;gap:10px;grid-template-columns:2fr 1fr 1fr;grid-template-rows:200px 200px}
+.gallery img{width:100%;height:100%;object-fit:cover;border-radius:14px;border:1px solid var(--line)}
+.gallery img:first-child{grid-row:span 2}
+.prices{display:grid;gap:0 40px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.price{display:flex;align-items:baseline;gap:10px;padding:16px 0;border-bottom:1px solid var(--line)}
+.price .t{flex:none;max-width:70%}
+.price .t small{display:block;color:var(--muted);font-size:13px}
+.price .dots{flex:1;border-bottom:1px dotted var(--line2);transform:translateY(-4px)}
+.price b{white-space:nowrap}
+.where{display:grid;grid-template-columns:1.1fr 1fr;gap:28px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.where img{width:100%;height:100%;min-height:320px;object-fit:cover;object-position:center 60%}
+.where-t{padding:28px 28px 28px 0}
+@media (max-width:760px){.where{grid-template-columns:1fr;gap:0}.where img{min-height:220px;max-height:280px}.where-t{padding:22px}}
+footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted);font-size:14px}
+footer .wrap{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+footer b{color:var(--ink);display:block;margin-bottom:6px}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.fab.hide{display:none}
+@media (max-width:640px){
+  .gallery{grid-template-columns:1fr 1fr;grid-template-rows:180px 120px 120px}
+  .gallery img:first-child{grid-column:span 2;grid-row:auto}
+  .hex{width:280px;right:-90px}
+  section{padding:48px 0}
+  .step-h{padding:16px}.step-b{padding:0 16px 18px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="mono">NL</span><span><b class="js-name">NEXT LEVEL</b><small class="js-tag">Barbershop</small></span></a>
+    <a class="btn sm ghost js-call" href="#" hidden>Sună</a>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <img src="/img/salon-hero.jpg" alt="Interiorul salonului Next Level Barbershop" fetchpriority="high">
+  <svg class="hex" viewBox="0 0 400 300" fill="none" stroke="#fff" stroke-width="2.5" aria-hidden="true">
+    <path d="M60 40l40-23 40 23v46l-40 23-40-23z M140 40l40-23 40 23v46l-40 23-40-23z M220 40l40-23 40 23v46l-40 23-40-23z M300 40l40-23 40 23v46l-40 23-40-23z M100 109l40-23 40 23v46l-40 23-40-23z M180 109l40-23 40 23v46l-40 23-40-23z M260 109l40-23 40 23v46l-40 23-40-23z M220 178l40-23 40 23v46l-40 23-40-23z M300 178l40-23 40 23v46l-40 23-40-23z"/>
+  </svg>
+  <div class="wrap">
+    <div class="eyebrow">Frizerie modernă</div>
+    <h1><span class="js-name">Next Level</span><span class="js-tag">Barbershop</span></h1>
+    <p>Alege serviciul, frizerul și ora care ți se potrivesc. Primești confirmare pe SMS și un reminder cu o zi înainte.</p>
+    <div class="row">
+      <a class="btn" href="#programare">Programează-te</a>
+      <a class="btn ghost" href="#preturi">Vezi prețurile</a>
+    </div>
+    <div class="facts">
+      <div><b class="js-hours">Luni–Sâmbătă</b> · <span class="js-time">09:00–18:00</span></div>
+      <div class="js-addr-fact" hidden></div>
+    </div>
+  </div>
+</div>
+
+<section id="programare">
+  <div class="wrap">
+    <h2>Programare online</h2>
+    <p class="lead">Durează sub un minut. Fără cont, fără aplicație de instalat.</p>
+
+    <div class="book" id="book">
+      <div class="step active" data-step="1">
+        <button class="step-h" data-go="1"><span class="num">1</span><span class="step-t"><b>Serviciul</b><small id="s1v">Ce îți facem azi?</small></span><span class="chg">Schimbă</span></button>
+        <div class="step-b"><div class="svc" id="services"><div class="spin"></div></div></div>
+      </div>
+      <div class="step" data-step="2">
+        <button class="step-h" data-go="2"><span class="num">2</span><span class="step-t"><b>Frizerul</b><small id="s2v">La cine vrei să mergi?</small></span><span class="chg">Schimbă</span></button>
+        <div class="step-b"><div class="barbers" id="barbers"></div></div>
+      </div>
+      <div class="step" data-step="3">
+        <button class="step-h" data-go="3"><span class="num">3</span><span class="step-t"><b>Ziua și ora</b><small id="s3v">Alege când vii</small></span><span class="chg">Schimbă</span></button>
+        <div class="step-b">
+          <div class="dates" id="dates"></div>
+          <div class="slots-g" id="slots"></div>
+        </div>
+      </div>
+      <div class="step" data-step="4">
+        <button class="step-h" data-go="4"><span class="num">4</span><span class="step-t"><b>Datele tale</b><small>Pentru confirmare și reminder pe SMS</small></span></button>
+        <div class="step-b">
+          <form class="form" id="form" novalidate>
+            <div class="summary" id="sum"></div>
+            <label class="f"><span>Nume</span><input type="text" name="name" autocomplete="name" required maxlength="50" placeholder="Ex: Andrei Popescu"></label>
+            <label class="f"><span>Telefon mobil</span><input type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder="07xx xxx xxx"></label>
+            <label class="hp">Nu completa<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+            <label class="check"><input type="checkbox" name="consent"> <span>Sunt de acord ca numele și telefonul meu să fie folosite doar pentru gestionarea programării (confirmare și reminder SMS).</span></label>
+            <div class="err" id="err"></div>
+            <button class="btn" type="submit" id="submit">Confirmă programarea</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="book done-card" id="done">
+      <div class="tick">✓</div>
+      <h3>Te așteptăm!</h3>
+      <p class="lead" style="margin:0" id="doneMsg">Ți-am trimis confirmarea pe SMS.</p>
+      <div class="summary" id="doneSum"></div>
+      <div class="row">
+        <button class="btn sm" id="ics">Adaugă în calendar</button>
+        <a class="btn sm ghost" id="cancelLink" href="#">Anulează</a>
+        <button class="btn sm ghost" id="again">Programare nouă</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="echipa" style="padding-top:0">
+  <div class="wrap">
+    <h2>Echipa</h2>
+    <p class="lead">Frizeri cu mână sigură și ochi pentru detalii.</p>
+    <div class="team" id="team"></div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>Salonul</h2>
+    <p class="lead">Lumina hexagonală, scaunele clasice, atmosfera pe care o recunoști de la intrare.</p>
+    <div class="gallery">
+      <img src="/img/salon-hero.jpg" alt="Salonul Next Level" loading="lazy">
+      <img src="/img/salon-1.jpg" alt="Posturile de lucru" loading="lazy">
+      <img src="/img/salon-2.jpg" alt="Tavanul cu lumini hexagonale" loading="lazy">
+      <img src="/img/post-1.jpg" alt="Scaun de frizerie" loading="lazy">
+      <img src="/img/post-2.jpg" alt="Post de lucru cu oglindă" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section id="locatie" style="padding-top:0">
+  <div class="wrap">
+    <div class="where">
+      <img src="/img/fatada.jpg" alt="Fațada salonului Next Level Barbershop" loading="lazy">
+      <div class="where-t">
+        <h2>Unde ne găsești</h2>
+        <p class="lead js-addr">Str. Culturii nr. 5 (lângă Ofertis)</p>
+        <p class="muted" style="margin-bottom:22px">Pentru un look fresh, tunsori adaptate dorințelor tale, la prețuri accesibile. Ne poți călca pragul și fără programare, dar cu programare nu aștepți deloc.</p>
+        <div class="row" style="display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn js-maps" href="#" target="_blank" rel="noopener">Deschide în Maps</a>
+          <a class="btn ghost js-call2" href="#">Sună-ne</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="preturi" style="padding-top:0">
+  <div class="wrap">
+    <h2>Prețuri</h2>
+    <p class="lead">Prețul final depinde de lungimea părului și de complexitate.</p>
+    <div class="prices" id="prices"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><b class="serif js-name">Next Level</b><span class="js-tag">Barbershop</span></div>
+    <div><b>Program</b><span class="js-hours">Luni–Sâmbătă</span>, <span class="js-time">09:00–18:00</span><br>Duminică închis</div>
+    <div class="js-contact"><b>Contact</b></div>
+  </div>
+</footer>
+
+<a class="btn fab" href="#programare" id="fab">Programează-te</a>
+
+<script>
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ZILE = ["Dum", "Lun", "Mar", "Mie", "Joi", "Vin", "Sâm"];
+const ZILE_L = ["duminică", "luni", "marți", "miercuri", "joi", "vineri", "sâmbătă"];
+const LUNI = ["ian", "feb", "mar", "apr", "mai", "iun", "iul", "aug", "sep", "oct", "noi", "dec"];
+const dt = (d) => new Date(d + "T12:00:00Z");
+const longDate = (d) => `${ZILE_L[dt(d).getUTCDay()]}, ${dt(d).getUTCDate()} ${LUNI[dt(d).getUTCMonth()]}`;
+const priceTxt = (s) => (s.priceMax && s.priceMax > s.price ? `${s.price}–${s.priceMax} lei` : `${s.price} lei`);
+const initials = (n) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+
+async function api(path, opts = {}) {
+  const res = await fetch("/api/" + path, { ...opts, headers: { "content-type": "application/json" } });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Ceva n-a mers. Încearcă din nou.");
+  return data;
+}
+
+let S = null; // setări salon
+const st = { service: null, barber: null, date: null, time: null, slotBarbers: [] };
+
+function daysLabel(days) {
+  const d = [...days].sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+  const names = ["Duminică", "Luni", "Marți", "Miercuri", "Joi", "Vineri", "Sâmbătă"];
+  const idx = d.map((x) => (x + 6) % 7);
+  const consecutive = idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
+  return consecutive && d.length > 2 ? `${names[d[0]]}–${names[d.at(-1)]}` : d.map((x) => names[x]).join(", ");
+}
+
+function go(n) {
+  document.querySelectorAll(".step").forEach((el) => {
+    const k = +el.dataset.step;
+    el.classList.toggle("active", k === n);
+    el.classList.toggle("done", k < n);
+  });
+  const el = $(`.step[data-step="${n}"]`);
+  if (n > 1) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+  if (n === 3) loadDates();
+  if (n === 4) renderSummary();
+}
+document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => go(+b.dataset.go)));
+
+function renderInfo() {
+  document.querySelectorAll(".js-name").forEach((e) => (e.textContent = S.salonName));
+  document.querySelectorAll(".js-tag").forEach((e) => (e.textContent = S.tagline));
+  document.querySelectorAll(".js-hours").forEach((e) => (e.textContent = daysLabel(S.days)));
+  document.querySelectorAll(".js-time").forEach((e) => (e.textContent = `${S.open}–${S.close}`));
+  document.title = `${S.salonName} ${S.tagline} · Programări online`;
+  if (S.phone) { const c = $(".js-call"); c.href = "tel:" + S.phone.replace(/\s/g, ""); c.hidden = false; }
+  if (S.address) { const a = $(".js-addr-fact"); a.hidden = false; a.textContent = S.address; $(".js-addr").textContent = S.address; }
+  const maps = S.mapsUrl || (S.address ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(S.salonName + " " + S.address) : "");
+  if (maps) $(".js-maps").href = maps; else $(".js-maps").hidden = true;
+  if (S.phone) $(".js-call2").href = "tel:" + S.phone.replace(/\s/g, ""); else $(".js-call2").hidden = true;
+  const contact = [];
+  if (S.phone) contact.push(`<a href="tel:${esc(S.phone.replace(/\s/g, ""))}">${esc(S.phone)}</a>`);
+  if (S.address) contact.push(S.mapsUrl ? `<a href="${esc(S.mapsUrl)}" target="_blank" rel="noopener">${esc(S.address)}</a>` : esc(S.address));
+  if (S.instagram) contact.push(`<a href="https://instagram.com/${esc(S.instagram.replace(/^@/, ""))}" target="_blank" rel="noopener">Instagram @${esc(S.instagram.replace(/^@/, ""))}</a>`);
+  $(".js-contact").innerHTML = "<b>Contact</b>" + (contact.join("<br>") || "Programări online, oricând.");
+
+  $("#services").innerHTML = S.services.map((s) => `
+    <button class="opt" data-svc="${esc(s.id)}">
+      <span class="t"><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></span>
+      <span class="meta"><b>${priceTxt(s)}</b>${s.duration} min</span>
+    </button>`).join("");
+  $("#prices").innerHTML = S.services.map((s) => `
+    <div class="price"><span class="t">${esc(s.name)}<small>${esc(s.desc)} · ${s.duration} min</small></span><span class="dots"></span><b>${priceTxt(s)}</b></div>`).join("");
+  $("#team").innerHTML = S.barbers.map((b) => `
+    <div class="member"><span class="av">${esc(initials(b.name))}</span><span><b>${esc(b.name)}</b><small>${esc(daysLabel(b.days))}</small></span></div>`).join("");
+  $("#barbers").innerHTML = `
+    <button class="opt barber" data-barber="any"><span class="av any">✦</span><span><b>Oricine e liber</b><br><small>Cele mai multe ore</small></span></button>` +
+    S.barbers.map((b) => `<button class="opt barber" data-barber="${esc(b.id)}"><span class="av">${esc(initials(b.name))}</span><span><b>${esc(b.name)}</b><br><small>${esc(daysLabel(b.days))}</small></span></button>`).join("");
+}
+
+$("#services").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-svc]"); if (!b) return;
+  st.service = S.services.find((s) => s.id === b.dataset.svc);
+  st.date = st.time = null;
+  document.querySelectorAll("[data-svc]").forEach((x) => x.classList.toggle("sel", x === b));
+  $("#s1v").textContent = `${st.service.name} · ${priceTxt(st.service)}`;
+  go(2);
+});
+$("#barbers").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-barber]"); if (!b) return;
+  st.barber = b.dataset.barber;
+  st.date = st.time = null;
+  document.querySelectorAll("[data-barber]").forEach((x) => x.classList.toggle("sel", x === b));
+  $("#s2v").textContent = st.barber === "any" ? "Oricine e liber" : barberName(st.barber);
+  go(3);
+});
+const barberName = (id) => S.barbers.find((b) => b.id === id)?.name || id;
+
+async function loadDates() {
+  $("#dates").innerHTML = '<div class="spin"></div>';
+  $("#slots").innerHTML = "";
+  try {
+    const { days } = await api(`days?service=${st.service.id}&barber=${st.barber}`);
+    if (!days.length) { $("#dates").innerHTML = '<div class="empty">Nu sunt zile disponibile momentan.</div>'; return; }
+    $("#dates").innerHTML = days.map((d) => {
+      const x = dt(d.date);
+      return `<button class="date" data-date="${d.date}" ${d.free ? "" : "disabled"}>
+        <small>${ZILE[x.getUTCDay()]}</small><b>${x.getUTCDate()}</b><i>${d.free ? LUNI[x.getUTCMonth()] : "complet"}</i></button>`;
+    }).join("");
+    const first = st.date && days.some((d) => d.date === st.date && d.free) ? st.date : days.find((d) => d.free)?.date;
+    if (first) pickDate(first);
+    else $("#slots").innerHTML = '<div class="empty">Toate orele sunt ocupate în următoarele zile. Sună-ne, poate se eliberează ceva.</div>';
+  } catch (e) { $("#dates").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+$("#dates").addEventListener("click", (e) => { const b = e.target.closest("[data-date]"); if (b) pickDate(b.dataset.date); });
+
+async function pickDate(date) {
+  st.date = date; st.time = null;
+  document.querySelectorAll("[data-date]").forEach((x) => x.classList.toggle("sel", x.dataset.date === date));
+  $(`[data-date="${date}"]`)?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+  $("#slots").innerHTML = '<div class="spin"></div>';
+  try {
+    const { slots } = await api(`slots?date=${date}&service=${st.service.id}&barber=${st.barber}`);
+    if (st.date !== date) return;
+    if (!slots.length) { $("#slots").innerHTML = '<div class="empty">Nicio oră liberă în ziua asta. Încearcă altă zi.</div>'; return; }
+    const groups = [["Dimineața", (t) => t < "12:00"], ["După-amiaza", (t) => t >= "12:00" && t < "15:00"], ["Spre seară", (t) => t >= "15:00"]];
+    $("#slots").innerHTML = groups.map(([label, f]) => {
+      const g = slots.filter((s) => f(s.time)); if (!g.length) return "";
+      return `<h4>${label}</h4><div class="slots">${g.map((s) => `<button class="slot" data-time="${s.time}" data-b="${s.barbers.join(",")}">${s.time}</button>`).join("")}</div>`;
+    }).join("");
+  } catch (e) { $("#slots").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+$("#slots").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-time]"); if (!b) return;
+  st.time = b.dataset.time;
+  st.slotBarbers = b.dataset.b.split(",");
+  document.querySelectorAll("[data-time]").forEach((x) => x.classList.toggle("sel", x === b));
+  $("#s3v").textContent = `${longDate(st.date)}, ora ${st.time}`;
+  go(4);
+});
+
+function renderSummary() {
+  $("#sum").innerHTML = `
+    <div><span>Serviciu</span><b>${esc(st.service.name)}</b></div>
+    <div><span>Frizer</span><b>${st.barber === "any" ? "Oricine e liber" : esc(barberName(st.barber))}</b></div>
+    <div><span>Când</span><b>${longDate(st.date)}, ${st.time}</b></div>
+    <div><span>Preț</span><b>${priceTxt(st.service)}</b></div>`;
+  const f = $("#form");
+  if (!f.name.value) f.name.value = store.get("nl_name") || "";
+  if (!f.phone.value) f.phone.value = store.get("nl_phone") || "";
+}
+
+let last = null;
+$("#form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = e.target, btn = $("#submit");
+  $("#err").textContent = "";
+  if (f.name.value.trim().length < 2) return ($("#err").textContent = "Scrie-ți numele.");
+  if (!/^(\+?40|0)7\d{8}$/.test(f.phone.value.replace(/[\s.-]/g, ""))) return ($("#err").textContent = "Scrie un număr de mobil valid (07xx xxx xxx).");
+  if (!f.consent.checked) return ($("#err").textContent = "Bifează acordul ca să-ți putem trimite SMS-ul.");
+  btn.disabled = true; btn.textContent = "Se trimite…";
+  try {
+    const r = await api("book", { method: "POST", body: JSON.stringify({
+      date: st.date, time: st.time, serviceId: st.service.id, barber: st.barber,
+      name: f.name.value, phone: f.phone.value, consent: true, website: f.website.value,
+    }) });
+    store.set("nl_name", f.name.value.trim()); store.set("nl_phone", f.phone.value.trim());
+    last = r.booking;
+    showDone(r);
+  } catch (err) {
+    $("#err").textContent = err.message;
+    if (/ocupat/i.test(err.message)) setTimeout(() => go(3), 1500);
+  } finally { btn.disabled = false; btn.textContent = "Confirmă programarea"; }
+});
+
+function showDone(r) {
+  const b = r.booking;
+  $("#book").style.display = "none";
+  $("#done").classList.add("show");
+  $("#doneMsg").textContent = r.sms ? "Ți-am trimis confirmarea pe SMS. Primești și un reminder cu o zi înainte." : "Programarea e salvată. Primești un reminder pe SMS cu o zi înainte.";
+  $("#doneSum").innerHTML = `
+    <div><span>Serviciu</span><b>${esc(b.serviceName)}</b></div>
+    <div><span>Frizer</span><b>${esc(b.barberName)}</b></div>
+    <div><span>Când</span><b>${longDate(b.date)}, ${b.start}</b></div>
+    <div><span>Preț</span><b>${priceTxt(b)}</b></div>`;
+  $("#cancelLink").href = "/a/" + b.token;
+  $("#programare").scrollIntoView({ behavior: "smooth" });
+}
+
+$("#again").addEventListener("click", () => {
+  $("#done").classList.remove("show"); $("#book").style.display = "";
+  Object.assign(st, { service: null, barber: null, date: null, time: null });
+  document.querySelectorAll(".sel").forEach((x) => x.classList.remove("sel"));
+  $("#s1v").textContent = "Ce îți facem azi?"; $("#s2v").textContent = "La cine vrei să mergi?"; $("#s3v").textContent = "Alege când vii";
+  go(1);
+});
+
+$("#ics").addEventListener("click", () => {
+  if (!last) return;
+  const f = (d, t) => d.replace(/-/g, "") + "T" + t.replace(":", "") + "00";
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//NextLevel//Programari//RO", "BEGIN:VEVENT",
+    `UID:${last.token}@programari`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}Z`,
+    `DTSTART;TZID=Europe/Bucharest:${f(last.date, last.start)}`, `DTEND;TZID=Europe/Bucharest:${f(last.date, last.end)}`,
+    `SUMMARY:${S.salonName} - ${last.serviceName} (${last.barberName})`, S.address ? `LOCATION:${S.address}` : "",
+    "BEGIN:VALARM", "TRIGGER:-PT1H", "ACTION:DISPLAY", "DESCRIPTION:Programare la frizerie", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR"].filter(Boolean).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  a.download = "programare-frizerie.ics"; a.click();
+});
+
+// butonul flotant dispare când formularul e pe ecran
+new IntersectionObserver(([e]) => $("#fab").classList.toggle("hide", e.isIntersecting), { threshold: 0.05 }).observe($("#programare"));
+
+api("settings").then((s) => { S = s; renderInfo(); })
+  .catch(() => ($("#services").innerHTML = '<div class="empty">Programările online nu sunt disponibile acum. Te rugăm să ne suni.</div>'));
+</script>
+</body>
+</html>

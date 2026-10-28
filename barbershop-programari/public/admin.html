@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin · Programări</title>
+<meta name="theme-color" content="#0b0b0c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0c;--panel:#141416;--panel2:#1b1b1e;--line:#2a2a2e;--line2:#3a3a40;--ink:#f4f3f1;--muted:#9b9aa1;--dim:#6c6b72;
+  --ok:#7fd8a6;--warn:#f2c46d;--err:#ff8a7a;--blue:#8ab4ff;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:0 12px;height:42px;width:100%;font-size:16px}
+textarea{height:auto;padding:10px 12px;resize:vertical;min-height:70px}
+input[type=checkbox]{width:18px;height:18px;accent-color:#fff;padding:0}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ink);outline-offset:1px}
+label.f{display:block}
+label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.mono{width:34px;height:34px;display:grid;place-items:center;font:700 13px Cinzel,serif;background:var(--ink);color:var(--bg);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;font-size:14px;text-decoration:none;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+.btn.red{background:var(--err);color:#1a0a08}.btn.green{background:var(--ok);color:#06180e}
+.btn.sm{height:34px;padding:0 12px;font-size:13px}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.muted{color:var(--muted)}
+.hidden{display:none!important}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+#login form{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px;display:grid;gap:14px;text-align:center}
+#login .mono{width:52px;height:52px;margin:0 auto;font-size:18px}
+#login h1{font:700 22px Cinzel,serif;letter-spacing:.05em}
+
+/* app */
+header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.bar b{font:700 15px Cinzel,serif;letter-spacing:.08em}
+.tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{height:32px;padding:0 14px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted)}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+main{max-width:1280px;margin:0 auto;padding:16px 16px 100px}
+.banner{padding:12px 14px;border-radius:var(--r);background:rgba(242,196,109,.12);border:1px solid rgba(242,196,109,.35);color:var(--warn);font-size:14px;margin-bottom:14px}
+
+.daynav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.daynav h2{font-size:20px;font-weight:700;margin-right:auto}
+.daynav h2::first-letter{text-transform:uppercase}
+.round{width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;font-size:18px}
+.daynav input[type=date]{width:auto;height:40px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.kpi small{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.kpi b{font-size:22px;font-variant-numeric:tabular-nums}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.chips{display:flex;gap:6px;overflow-x:auto;flex:1;min-width:0}
+.chip{height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line2);font-size:13px;font-weight:600;white-space:nowrap}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* grilă */
+.grid-wrap{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:auto;max-height:calc(100vh - 290px);min-height:400px}
+.grid{display:grid;position:relative;min-width:100%}
+.gh{position:sticky;top:0;z-index:5;background:var(--panel2);border-bottom:1px solid var(--line);height:44px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;border-left:1px solid var(--line)}
+.gh small{color:var(--muted);font-weight:500;margin-left:6px}
+.gh.corner{position:sticky;left:0;z-index:6;border-left:0}
+.times{position:sticky;left:0;z-index:3;background:var(--panel)}
+.times div:first-child{transform:none}
+.times div{position:absolute;right:8px;font-size:11px;color:var(--dim);transform:translateY(-50%);font-variant-numeric:tabular-nums}
+.col{position:relative;border-left:1px solid var(--line);cursor:copy}
+.col .hour{position:absolute;left:0;right:0;border-top:1px solid var(--line)}
+.col .half{position:absolute;left:0;right:0;border-top:1px dashed #202024}
+.col.off{background:repeating-linear-gradient(135deg,transparent 0 8px,rgba(255,255,255,.03) 8px 16px);cursor:default}
+.ev{position:absolute;left:3px;right:3px;border-radius:8px;padding:4px 7px;font-size:12px;line-height:1.25;overflow:hidden;cursor:pointer;border-left:3px solid;z-index:2;text-align:left}
+.ev b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev span{display:block;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev.confirmed{background:#24262e;border-color:var(--blue)}
+.ev.online{background:#232a36}
+.ev.done{background:#1b2a22;border-color:var(--ok)}
+.ev.noshow{background:#2e1f1d;border-color:var(--err);text-decoration:line-through}
+.ev.cancelled{display:none}
+.ev.new{box-shadow:0 0 0 2px var(--warn)}
+.blk{position:absolute;left:0;right:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 6px,rgba(255,255,255,.1) 6px 12px);border-top:1px solid var(--line2);border-bottom:1px solid var(--line2);font-size:11px;color:var(--muted);padding:3px 6px;cursor:pointer;z-index:1}
+.now{position:absolute;left:0;right:0;border-top:2px solid var(--err);z-index:4;pointer-events:none}
+.now::before{content:"";position:absolute;left:-4px;top:-5px;width:8px;height:8px;border-radius:50%;background:var(--err)}
+
+/* listă */
+.list{display:grid;gap:8px}
+.item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);cursor:pointer;text-align:left;width:100%}
+.item .tm{font-weight:700;font-variant-numeric:tabular-nums;width:52px;flex:none}
+.item .who{flex:1;min-width:0}
+.item .who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .who small{color:var(--muted);font-size:13px}
+.st{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.st.confirmed{background:rgba(138,180,255,.14);color:var(--blue)}
+.st.done{background:rgba(127,216,166,.14);color:var(--ok)}
+.st.noshow,.st.cancelled{background:rgba(255,138,122,.14);color:var(--err)}
+.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line2);border-radius:var(--r)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:92vh;overflow:auto;padding:20px 18px calc(20px + env(safe-area-inset-bottom));animation:up .2s ease}
+@media (min-width:700px){.modal{align-items:center}.sheet{border-radius:20px}}
+@keyframes up{from{transform:translateY(30px);opacity:0}}
+.sheet h3{font-size:19px;margin-bottom:4px;display:flex;align-items:center;gap:10px}
+.sheet .x{margin-left:auto;font-size:22px;color:var(--muted);width:34px;height:34px}
+.fg{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin:14px 0}
+.fg .full{grid-column:1/-1}
+.kv{display:grid;gap:8px;margin:14px 0;font-size:14px;background:var(--panel2);border-radius:var(--r);padding:12px}
+.kv div{display:flex;justify-content:space-between;gap:10px}
+.kv span{color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{flex:1}
+.ck{display:flex;gap:8px;align-items:center;font-size:14px}
+.err{color:var(--err);font-size:14px;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+
+/* setări & tabele */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.card h3{font-size:16px;margin-bottom:4px}
+.card>p{color:var(--muted);font-size:13px;margin-bottom:12px}
+.rows{display:grid;gap:10px}
+.row{display:grid;gap:8px;align-items:end;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2)}
+.row.svc{grid-template-columns:2fr 2fr 80px 80px 80px auto}
+.row.brb{grid-template-columns:1.2fr 1.2fr auto auto auto}
+.daysel{display:flex;gap:4px;flex-wrap:wrap}
+.daysel label{display:grid;place-items:center;width:38px;height:34px;border-radius:8px;border:1px solid var(--line2);font-size:12px;font-weight:700;cursor:pointer;user-select:none}
+.daysel input{display:none}
+.daysel label:has(input:checked){background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.hint{font-size:12px;color:var(--dim);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl{overflow-x:auto}
+.savebar{position:sticky;bottom:12px;display:flex;justify-content:flex-end;gap:10px;z-index:10}
+.savebar .btn{box-shadow:0 10px 30px rgba(0,0,0,.6)}
+@media (max-width:720px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .row.svc,.row.brb{grid-template-columns:1fr 1fr}
+  .row .wide{grid-column:1/-1}
+  .tabs button{padding:0 10px}
+  .bar b{display:none}
+  .grid-wrap{max-height:none}
+  .chips{flex-basis:100%}
+  .daynav h2{flex-basis:100%;font-size:18px}
+  .daynav input[type=date]{flex:1}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <form id="loginForm">
+    <div class="mono">NL</div>
+    <h1>Admin</h1>
+    <p class="muted" style="font-size:14px">Calendarul programărilor</p>
+    <input type="password" name="pw" placeholder="Parola" autocomplete="current-password" required>
+    <label class="ck" style="justify-content:center"><input type="checkbox" name="keep" checked> Ține-mă minte pe acest telefon</label>
+    <button class="btn" type="submit">Intră</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div class="bar">
+      <span class="mono">NL</span><b id="salonName">NEXT LEVEL</b>
+      <nav class="tabs" id="tabs">
+        <button data-tab="cal" class="on">Calendar</button>
+        <button data-tab="clients">Clienți</button>
+        <button data-tab="reports">Rapoarte</button>
+        <button data-tab="settings">Setări</button>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <div class="banner hidden" id="smsBanner">SMS-urile nu sunt configurate încă: lipsesc datele SMSLink în Netlify (SMSLINK_CONNECTION_ID și SMSLINK_PASSWORD). Programările merg, dar fără SMS.</div>
+
+    <!-- CALENDAR -->
+    <section id="tab-cal">
+      <div class="daynav">
+        <h2 id="dayTitle">Azi</h2>
+        <button class="round" id="prev" aria-label="Ziua anterioară">‹</button>
+        <button class="btn ghost sm" id="today">Azi</button>
+        <button class="round" id="next" aria-label="Ziua următoare">›</button>
+        <input type="date" id="datePick">
+      </div>
+      <div class="kpis" id="kpis"></div>
+      <div class="toolbar">
+        <div class="chips" id="barberChips"></div>
+        <button class="chip" id="viewToggle">Listă</button>
+        <button class="btn ghost sm" id="blockBtn">Blochează</button>
+        <button class="btn sm" id="addBtn">+ Programare</button>
+      </div>
+      <div id="calView"></div>
+    </section>
+
+    <!-- CLIENȚI -->
+    <section id="tab-clients" class="hidden">
+      <div class="toolbar">
+        <input type="search" id="clientSearch" placeholder="Caută după nume sau telefon" style="max-width:340px">
+        <button class="btn ghost sm" id="clientsCsv">Export CSV</button>
+      </div>
+      <div class="card tbl" id="clientsTbl"></div>
+    </section>
+
+    <!-- RAPOARTE -->
+    <section id="tab-reports" class="hidden">
+      <div class="card">
+        <h3>Raport pe perioadă</h3>
+        <p>Programări, încasări estimate și neprezentări, pe fiecare frizer. Poți descărca tot în Excel (CSV).</p>
+        <div class="toolbar">
+          <label class="f"><span>De la</span><input type="date" id="repFrom"></label>
+          <label class="f"><span>Până la</span><input type="date" id="repTo"></label>
+          <div style="display:flex;gap:6px;align-self:end">
+            <button class="chip" data-range="week">Săpt. asta</button>
+            <button class="chip" data-range="month">Luna asta</button>
+            <button class="chip" data-range="last">Luna trecută</button>
+          </div>
+        </div>
+        <div class="toolbar"><button class="btn sm" id="repRun">Arată raportul</button><button class="btn ghost sm" id="repCsv">Descarcă CSV</button></div>
+      </div>
+      <div id="repOut"></div>
+    </section>
+
+    <!-- SETĂRI -->
+    <section id="tab-settings" class="hidden">
+      <form id="setForm"></form>
+    </section>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+/* ---------- utilitare ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ZILE = ["duminică", "luni", "marți", "miercuri", "joi", "vineri", "sâmbătă"];
+const ZS = ["D", "L", "Ma", "Mi", "J", "V", "S"];
+const LUNI = ["ianuarie", "februarie", "martie", "aprilie", "mai", "iunie", "iulie", "august", "septembrie", "octombrie", "noiembrie", "decembrie"];
+const dt = (d) => new Date(d + "T12:00:00Z");
+const addDays = (d, n) => { const x = dt(d); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+const dow = (d) => dt(d).getUTCDay();
+const longDate = (d) => `${ZILE[dow(d)]}, ${dt(d).getUTCDate()} ${LUNI[dt(d).getUTCMonth()]}`;
+const toMin = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+const fromMin = (m) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+const ls = { get(k) { try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch { return null; } },
+  set(k, v, keep) { try { (keep ? localStorage : sessionStorage).setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch {} } };
+const STATUS = { confirmed: "Confirmată", done: "A venit", noshow: "Nu a venit", cancelled: "Anulată" };
+const lei = (n) => `${Math.round(n).toLocaleString("ro-RO")} lei`;
+const localToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Bucharest" }).format(new Date());
+const localNowMin = () => { const p = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Bucharest", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()); return toMin(p); };
+
+let PW = ls.get("nl_admin");
+let S = null; // setări
+const state = { date: localToday(), barber: "all", view: innerWidth < 720 ? "list" : "grid", day: null, seen: new Set() };
+
+async function api(path, body) {
+  const res = await fetch("/api/admin/" + path, {
+    method: body ? "POST" : "GET",
+    headers: { "content-type": "application/json", authorization: "Bearer " + PW },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { logout(); throw new Error("Sesiune expirată"); }
+  if (!res.ok) { const e = new Error(data.error || "Eroare"); e.status = res.status; throw e; }
+  return data;
+}
+function toast(msg) {
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  document.body.append(t); setTimeout(() => t.remove(), 2400);
+}
+const barberName = (id) => (id === "all" ? "Toți" : S.barbers.find((b) => b.id === id)?.name || id);
+const priceTxt = (s) => (s.priceMax && s.priceMax > s.price ? `${s.price}–${s.priceMax} lei` : `${s.price} lei`);
+const worksOn = (b, date) => (b.days?.length ? b.days : S.days).filter((d) => S.days.includes(d)).includes(dow(date));
+
+/* ---------- login ---------- */
+$("#loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  PW = e.target.pw.value;
+  try { await boot(); ls.set("nl_admin", PW, e.target.keep.checked); }
+  catch (err) { $("#loginErr").textContent = err.message; }
+});
+function logout() { ls.del("nl_admin"); PW = null; $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); }
+
+async function boot() {
+  const r = await api("check");
+  S = r.settings;
+  $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  $("#salonName").textContent = S.salonName.toUpperCase();
+  $("#smsBanner").classList.toggle("hidden", r.smsConfigured);
+  renderChips();
+  await loadDay();
+}
+if (PW) boot().catch(() => logout());
+
+/* ---------- tab-uri ---------- */
+$("#tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-tab]"); if (!b) return;
+  $$("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
+  ["cal", "clients", "reports", "settings"].forEach((t) => $("#tab-" + t).classList.toggle("hidden", t !== b.dataset.tab));
+  if (b.dataset.tab === "clients") loadClients();
+  if (b.dataset.tab === "settings") renderSettings();
+  if (b.dataset.tab === "reports" && !$("#repFrom").value) setRange("month");
+});
+
+/* ---------- calendar ---------- */
+function renderChips() {
+  $("#barberChips").innerHTML = [{ id: "all", name: "Toți" }, ...S.barbers.filter((b) => b.active)]
+    .map((b) => `<button class="chip ${state.barber === b.id ? "on" : ""}" data-b="${esc(b.id)}">${esc(b.name)}</button>`).join("");
+  $("#viewToggle").textContent = state.view === "grid" ? "Listă" : "Grilă";
+}
+$("#barberChips").addEventListener("click", (e) => { const b = e.target.closest("[data-b]"); if (!b) return; state.barber = b.dataset.b; renderChips(); renderDay(); });
+$("#viewToggle").addEventListener("click", () => { state.view = state.view === "grid" ? "list" : "grid"; renderChips(); renderDay(); });
+$("#prev").onclick = () => setDate(addDays(state.date, -1));
+$("#next").onclick = () => setDate(addDays(state.date, 1));
+$("#today").onclick = () => setDate(localToday());
+$("#datePick").onchange = (e) => e.target.value && setDate(e.target.value);
+function setDate(d) { state.date = d; state.seen.clear(); loadDay(); }
+
+async function loadDay(silent) {
+  const date = state.date;
+  if (!silent) $("#calView").innerHTML = '<div class="empty">Se încarcă…</div>';
+  const day = await api("day?date=" + date);
+  if (date !== state.date) return;
+  const fresh = state.day && state.day.date === date ? day.bookings.filter((b) => !state.day.bookings.some((x) => x.id === b.id)).map((b) => b.id) : [];
+  fresh.forEach((id) => state.seen.add(id));
+  if (fresh.length && silent) toast(fresh.length === 1 ? "Programare nouă!" : `${fresh.length} programări noi!`);
+  state.day = day;
+  renderDay();
+}
+setInterval(() => { if (PW && !$("#app").classList.contains("hidden") && !$("#modalRoot").innerHTML && document.visibilityState === "visible") loadDay(true).catch(() => {}); }, 60000);
+
+function visibleBarbers() {
+  return S.barbers.filter((b) => b.active && (state.barber === "all" || b.id === state.barber));
+}
+
+function renderDay() {
+  const d = state.day, date = state.date;
+  $("#dayTitle").textContent = date === localToday() ? "Azi · " + longDate(date) : longDate(date);
+  $("#datePick").value = date;
+  const bs = d.bookings.filter((b) => state.barber === "all" || b.barber === state.barber);
+  const active = bs.filter((b) => b.status !== "cancelled");
+  const est = active.filter((b) => b.status !== "noshow").reduce((s, b) => s + (b.price || 0), 0);
+  $("#kpis").innerHTML = `
+    <div class="kpi"><small>Programări</small><b>${active.length}</b></div>
+    <div class="kpi"><small>Încasări estimate</small><b>${lei(est)}</b></div>
+    <div class="kpi"><small>Au venit</small><b>${bs.filter((b) => b.status === "done").length}</b></div>
+    <div class="kpi"><small>Neprezentați / anulate</small><b>${bs.filter((b) => b.status === "noshow").length} / ${bs.filter((b) => b.status === "cancelled").length}</b></div>`;
+  if (!S.days.includes(dow(date)) && !active.length) {
+    $("#calView").innerHTML = '<div class="empty">Salonul e închis în ziua asta.</div>'; return;
+  }
+  state.view === "grid" ? renderGrid(d, date) : renderList(bs, d);
+}
+
+const PX = 1.6; // pixeli pe minut
+function renderGrid(d, date) {
+  const open = toMin(S.open), close = toMin(S.close);
+  const H = (close - open) * PX;
+  const barbers = visibleBarbers();
+  const colW = barbers.length > 2 ? "minmax(120px,1fr)" : "1fr";
+  let html = `<div class="grid-wrap"><div class="grid" style="grid-template-columns:52px repeat(${barbers.length},${colW})">`;
+  html += `<div class="gh corner"></div>` + barbers.map((b) => {
+    const n = d.bookings.filter((x) => x.barber === b.id && x.status !== "cancelled").length;
+    return `<div class="gh">${esc(b.name)}<small>${n}</small></div>`;
+  }).join("");
+  html += `<div class="times" style="height:${H}px;position:sticky;left:0">`;
+  for (let m = open; m <= close; m += 60) html += `<div style="top:${(m - open) * PX}px">${fromMin(m)}</div>`;
+  html += `</div>`;
+  const isToday = date === localToday(), now = localNowMin();
+  for (const b of barbers) {
+    const off = !worksOn(b, date);
+    html += `<div class="col ${off ? "off" : ""}" data-col="${esc(b.id)}" style="height:${H}px">`;
+    for (let m = open; m < close; m += 30) html += `<div class="${(m - open) % 60 ? "half" : "hour"}" style="top:${(m - open) * PX}px"></div>`;
+    for (const k of d.blocks.filter((k) => k.barber === b.id || k.barber === "all")) {
+      const t = Math.max(toMin(k.start), open), e = Math.min(toMin(k.end), close);
+      if (e > t) html += `<div class="blk" data-block="${esc(k.id)}" style="top:${(t - open) * PX}px;height:${(e - t) * PX}px">${esc(k.reason || "Blocat")} · ${k.start}–${k.end}</div>`;
+    }
+    for (const x of d.bookings.filter((x) => x.barber === b.id && x.status !== "cancelled")) {
+      const t = toMin(x.start), h = Math.max((toMin(x.end) - t) * PX - 2, 22);
+      html += `<button class="ev ${x.status} ${x.source === "online" && x.status === "confirmed" ? "online" : ""} ${state.seen.has(x.id) ? "new" : ""}" data-id="${esc(x.id)}" style="top:${(t - open) * PX + 1}px;height:${h}px">
+        <b>${x.start} ${esc(x.name)}</b><span>${esc(x.serviceName)}${x.source === "online" ? " · online" : ""}</span></button>`;
+    }
+    if (isToday && now >= open && now <= close) html += `<div class="now" style="top:${(now - open) * PX}px"></div>`;
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  $("#calView").innerHTML = html;
+  if (isToday && now > open + 60) $(".grid-wrap").scrollTop = (now - open - 60) * PX;
+}
+
+function renderList(bs, d) {
+  const items = [...bs].sort((a, b) => a.start.localeCompare(b.start));
+  const blocks = d.blocks.filter((k) => state.barber === "all" || k.barber === "all" || k.barber === state.barber);
+  if (!items.length && !blocks.length) { $("#calView").innerHTML = '<div class="empty">Nicio programare în ziua asta.</div>'; return; }
+  const rows = [
+    ...blocks.map((k) => ({ t: k.start, html: `<button class="item" data-block="${esc(k.id)}" style="opacity:.7"><span class="tm">${k.start}</span><span class="who"><b>${esc(k.reason || "Interval blocat")}</b><small>${k.start}–${k.end} · ${esc(barberName(k.barber))}</small></span><span class="st cancelled">Blocat</span></button>` })),
+    ...items.map((x) => ({ t: x.start, html: `<button class="item" data-id="${esc(x.id)}" ${x.status === "cancelled" ? 'style="opacity:.5"' : ""}>
+      <span class="tm">${x.start}</span>
+      <span class="who"><b>${esc(x.name)}${state.seen.has(x.id) ? " 🆕" : ""}</b><small>${esc(x.serviceName)} · ${esc(barberName(x.barber))}${x.source === "online" ? " · online" : ""}</small></span>
+      <span class="st ${x.status}">${STATUS[x.status]}</span></button>` })),
+  ].sort((a, b) => a.t.localeCompare(b.t));
+  $("#calView").innerHTML = `<div class="list">${rows.map((r) => r.html).join("")}</div>`;
+}
+
+$("#calView").addEventListener("click", (e) => {
+  const ev = e.target.closest("[data-id]");
+  if (ev) return openBooking(state.day.bookings.find((b) => b.id === ev.dataset.id));
+  const bl = e.target.closest("[data-block]");
+  if (bl) return openBlock(state.day.blocks.find((k) => k.id === bl.dataset.block));
+  const col = e.target.closest("[data-col]");
+  if (col && !col.classList.contains("off")) {
+    const y = e.clientY - col.getBoundingClientRect().top;
+    const m = toMin(S.open) + Math.floor(y / PX / S.slotStep) * S.slotStep;
+    openNew({ barber: col.dataset.col, time: fromMin(m) });
+  }
+});
+$("#addBtn").onclick = () => openNew({ barber: state.barber === "all" ? S.barbers.find((b) => b.active)?.id : state.barber });
+$("#blockBtn").onclick = () => openNewBlock();
+
+/* ---------- modale ---------- */
+function modal(html) {
+  $("#modalRoot").innerHTML = `<div class="modal"><div class="sheet">${html}</div></div>`;
+  const m = $(".modal");
+  m.addEventListener("click", (e) => { if (e.target === m || e.target.closest(".x")) closeModal(); });
+  return $(".sheet");
+}
+const closeModal = () => ($("#modalRoot").innerHTML = "");
+document.addEventListener("keydown", (e) => e.key === "Escape" && closeModal());
+
+function timeOptions(sel) {
+  let o = "";
+  for (let m = toMin(S.open); m < toMin(S.close); m += S.slotStep) o += `<option ${fromMin(m) === sel ? "selected" : ""}>${fromMin(m)}</option>`;
+  return o;
+}
+const barberOptions = (sel, all) => (all ? `<option value="all" ${sel === "all" ? "selected" : ""}>Toți frizerii</option>` : "") +
+  S.barbers.map((b) => `<option value="${esc(b.id)}" ${b.id === sel ? "selected" : ""}>${esc(b.name)}${b.active ? "" : " (inactiv)"}</option>`).join("");
+const serviceOptions = (sel) => S.services.map((s) => `<option value="${esc(s.id)}" ${s.id === sel ? "selected" : ""}>${esc(s.name)} · ${s.duration} min · ${priceTxt(s)}</option>`).join("");
+
+function openBooking(b) {
+  const tel = b.phone ? b.phone.replace(/^0/, "40") : "";
+  const sheet = modal(`
+    <h3>${esc(b.name)} <span class="st ${b.status}">${STATUS[b.status]}</span><button class="x">×</button></h3>
+    <div class="kv">
+      <div><span>Când</span><b>${longDate(b.date)}, ${b.start}–${b.end}</b></div>
+      <div><span>Frizer</span><b>${esc(barberName(b.barber))}</b></div>
+      <div><span>Serviciu</span><b>${esc(b.serviceName)}</b></div>
+      <div><span>Preț</span><b>${priceTxt(b)}</b></div>
+      <div><span>Telefon</span><b>${b.phone ? esc(b.phone) : "—"}</b></div>
+      <div><span>Sursă</span><b>${b.source === "online" ? "Online" : "Din salon"}</b></div>
+      <div><span>Reminder SMS</span><b>${b.reminderSent ? (b.reminderOk === false ? "Eșuat" : "Trimis / nu e nevoie") : "Se trimite cu o zi înainte"}</b></div>
+      ${b.note ? `<div><span>Notă</span><b>${esc(b.note)}</b></div>` : ""}
+    </div>
+    ${b.phone ? `<div class="acts" style="margin-bottom:10px">
+      <a class="btn ghost sm" href="tel:${esc(b.phone)}">Sună</a>
+      <a class="btn ghost sm" href="https://wa.me/${esc(tel)}" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn ghost sm" href="sms:${esc(b.phone)}">SMS</a></div>` : ""}
+    <div class="acts">
+      ${b.status !== "done" ? `<button class="btn green" data-s="done">✓ A venit</button>` : ""}
+      ${b.status !== "noshow" && b.status !== "cancelled" ? `<button class="btn ghost" data-s="noshow">Nu a venit</button>` : ""}
+      ${b.status !== "confirmed" ? `<button class="btn ghost" data-s="confirmed">Reactivează</button>` : ""}
+    </div>
+    <div class="acts" style="margin-top:8px">
+      <button class="btn ghost" id="edit">Mută / modifică</button>
+      ${b.status !== "cancelled" ? `<button class="btn red" data-s="cancelled">Anulează</button>` : ""}
+    </div>
+    <div class="err" id="merr"></div>`);
+  $$("[data-s]", sheet).forEach((btn) => (btn.onclick = async () => {
+    if (btn.dataset.s === "cancelled" && !confirm("Anulezi programarea?")) return;
+    try { await api("status", { date: b.date, id: b.id, status: btn.dataset.s }); closeModal(); toast("Salvat"); loadDay(); }
+    catch (e) { $("#merr").textContent = e.message; }
+  }));
+  $("#edit", sheet).onclick = () => openEdit(b);
+}
+
+function openEdit(b) {
+  const sheet = modal(`
+    <h3>Mută / modifică<button class="x">×</button></h3>
+    <form id="ef"><div class="fg">
+      <label class="f"><span>Zi</span><input type="date" name="newDate" value="${b.date}" required></label>
+      <label class="f"><span>Ora</span><select name="time">${timeOptions(b.start)}</select></label>
+      <label class="f"><span>Frizer</span><select name="barber">${barberOptions(b.barber)}</select></label>
+      <label class="f"><span>Durată (min)</span><input type="number" name="duration" value="${b.duration}" min="5" step="5"></label>
+      <label class="f full"><span>Serviciu</span><select name="serviceId">${serviceOptions(b.serviceId)}</select></label>
+      <label class="f"><span>Nume</span><input name="name" value="${esc(b.name)}"></label>
+      <label class="f"><span>Telefon</span><input name="phone" type="tel" value="${esc(b.phone)}"></label>
+      <label class="f full"><span>Notă internă</span><input name="note" value="${esc(b.note || "")}"></label>
+      <label class="ck full"><input type="checkbox" name="sendSms" ${b.phone ? "checked" : "disabled"}> Trimite clientului SMS cu noua oră</label>
+    </div>
+    <div class="acts"><button class="btn" type="submit">Salvează</button></div>
+    <div class="err" id="merr"></div></form>`);
+  const f = $("#ef", sheet);
+  f.serviceId.onchange = () => (f.duration.value = S.services.find((s) => s.id === f.serviceId.value)?.duration || f.duration.value);
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const body = { date: b.date, id: b.id, newDate: f.newDate.value, time: f.time.value, barber: f.barber.value, duration: +f.duration.value,
+      serviceId: f.serviceId.value !== b.serviceId ? f.serviceId.value : undefined, name: f.name.value, phone: f.phone.value, note: f.note.value, sendSms: f.sendSms.checked };
+    try { await saveWithForce("edit", body); closeModal(); toast("Programare mutată"); setDate(body.newDate); }
+    catch (err) { $("#merr").textContent = err.message; }
+  };
+}
+
+async function saveWithForce(path, body) {
+  try { return await api(path, body); }
+  catch (e) {
+    if (e.status === 409 && confirm(e.message + "\n\nO salvez oricum (suprapunere)?")) return api(path, { ...body, force: true });
+    throw e;
+  }
+}
+
+function openNew({ barber, time }) {
+  const sheet = modal(`
+    <h3>Programare nouă<button class="x">×</button></h3>
+    <form id="nf"><div class="fg">
+      <label class="f"><span>Zi</span><input type="date" name="date" value="${state.date}" required></label>
+      <label class="f"><span>Ora</span><select name="time">${timeOptions(time || S.open)}</select></label>
+      <label class="f"><span>Frizer</span><select name="barber">${barberOptions(barber)}</select></label>
+      <label class="f"><span>Durată (min)</span><input type="number" name="duration" value="${S.services[0].duration}" min="5" step="5"></label>
+      <label class="f full"><span>Serviciu</span><select name="serviceId">${serviceOptions(S.services[0].id)}</select></label>
+      <label class="f"><span>Nume client</span><input name="name" required placeholder="Ex: Mihai"></label>
+      <label class="f"><span>Telefon (opțional)</span><input name="phone" type="tel" placeholder="07xx xxx xxx"></label>
+      <label class="f full"><span>Notă internă</span><input name="note" placeholder="Ex: preferă mașina 2"></label>
+      <label class="ck full"><input type="checkbox" name="sendSms" checked> Trimite SMS de confirmare (reminderul pleacă oricum cu o zi înainte, dacă are telefon)</label>
+    </div>
+    <div class="acts"><button class="btn" type="submit">Salvează programarea</button></div>
+    <div class="err" id="merr"></div></form>`);
+  const f = $("#nf", sheet);
+  f.serviceId.onchange = () => (f.duration.value = S.services.find((s) => s.id === f.serviceId.value)?.duration || 30);
+  f.name.focus();
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const body = Object.fromEntries(new FormData(f)); body.sendSms = f.sendSms.checked; body.duration = +body.duration;
+    try { await saveWithForce("book", body); closeModal(); toast("Programare salvată"); setDate(body.date); }
+    catch (err) { $("#merr").textContent = err.message; }
+  };
+}
+
+function openNewBlock() {
+  const sheet = modal(`
+    <h3>Blochează un interval<button class="x">×</button></h3>
+    <p class="muted" style="font-size:13px">Pauză, concediu, zi liberă. Clienții nu vor mai vedea orele astea.</p>
+    <form id="bf"><div class="fg">
+      <label class="f full"><span>Pentru</span><select name="barber">${barberOptions(state.barber === "all" ? "all" : state.barber, true)}</select></label>
+      <label class="f"><span>De la data</span><input type="date" name="from" value="${state.date}" required></label>
+      <label class="f"><span>Până la data</span><input type="date" name="to" value="${state.date}"></label>
+      <label class="f"><span>De la ora</span><input type="time" name="start" value="13:00" step="300" required></label>
+      <label class="f"><span>Până la ora</span><input type="time" name="end" value="14:00" step="300" required></label>
+      <div class="full" style="display:flex;gap:6px;flex-wrap:wrap">
+        <button type="button" class="chip" data-p="${S.open}|${S.close}|Zi liberă">Toată ziua</button>
+        <button type="button" class="chip" data-p="13:00|14:00|Pauză de masă">Pauză masă</button>
+        <button type="button" class="chip" data-p="${S.open}|${S.close}|Concediu">Concediu</button>
+      </div>
+      <label class="f full"><span>Motiv (vizibil doar aici)</span><input name="reason" placeholder="Ex: Pauză de masă"></label>
+    </div>
+    <div class="acts"><button class="btn" type="submit">Blochează</button></div>
+    <div class="err" id="merr"></div></form>`);
+  const f = $("#bf", sheet);
+  $$("[data-p]", sheet).forEach((b) => (b.onclick = () => { const [s, e, r] = b.dataset.p.split("|"); f.start.value = s; f.end.value = e; f.reason.value = r; }));
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const r = await api("block", Object.fromEntries(new FormData(f)));
+      closeModal(); loadDay();
+      if (r.conflicts.length) alert("Atenție! Există programări în intervalul blocat (rămân valabile, sună clienții dacă e cazul):\n\n" + r.conflicts.join("\n"));
+      else toast("Interval blocat");
+    } catch (err) { $("#merr").textContent = err.message; }
+  };
+}
+
+function openBlock(k) {
+  const sheet = modal(`
+    <h3>${esc(k.reason || "Interval blocat")}<button class="x">×</button></h3>
+    <div class="kv"><div><span>Pentru</span><b>${esc(barberName(k.barber))}</b></div><div><span>Interval</span><b>${k.start}–${k.end}</b></div></div>
+    <div class="acts"><button class="btn red" id="ub">Deblochează</button></div><div class="err" id="merr"></div>`);
+  $("#ub", sheet).onclick = async () => {
+    try { await api("unblock", { date: state.date, id: k.id }); closeModal(); toast("Deblocat"); loadDay(); }
+    catch (e) { $("#merr").textContent = e.message; }
+  };
+}
+
+/* ---------- clienți ---------- */
+let CLIENTS = {};
+async function loadClients() {
+  $("#clientsTbl").innerHTML = '<div class="empty">Se încarcă…</div>';
+  CLIENTS = (await api("clients")).clients;
+  renderClients();
+}
+$("#clientSearch").oninput = () => renderClients();
+function renderClients() {
+  const q = $("#clientSearch").value.toLowerCase().replace(/\s/g, "");
+  const rows = Object.entries(CLIENTS).filter(([p, c]) => !q || p.includes(q) || (c.name || "").toLowerCase().replace(/\s/g, "").includes(q))
+    .sort((a, b) => (b[1].visits || 0) - (a[1].visits || 0));
+  if (!rows.length) { $("#clientsTbl").innerHTML = '<div class="empty">Niciun client încă.</div>'; return; }
+  $("#clientsTbl").innerHTML = `<table><thead><tr><th>Client</th><th>Telefon</th><th>Vizite</th><th>Neprez.</th><th>Anulări</th><th>Ultima vizită</th><th>Notă</th><th>Blocat</th></tr></thead><tbody>` +
+    rows.map(([p, c]) => `<tr>
+      <td><b>${esc(c.name)}</b></td><td><a href="tel:${p}">${p}</a></td>
+      <td>${c.visits || 0}</td><td style="color:${c.noshows ? "var(--err)" : ""}">${c.noshows || 0}</td><td>${c.cancels || 0}</td>
+      <td>${c.last ? longDate(c.last) : "—"}</td>
+      <td><input data-note="${p}" value="${esc(c.note || "")}" placeholder="—" style="height:34px;min-width:140px"></td>
+      <td><input type="checkbox" data-block-client="${p}" ${c.blocked ? "checked" : ""} title="Nu se mai poate programa online"></td></tr>`).join("") + `</tbody></table>`;
+}
+$("#clientsTbl").addEventListener("change", async (e) => {
+  const t = e.target;
+  try {
+    if (t.dataset.note) { await api("client", { phone: t.dataset.note, note: t.value }); CLIENTS[t.dataset.note].note = t.value; toast("Notă salvată"); }
+    if (t.dataset.blockClient) { await api("client", { phone: t.dataset.blockClient, blocked: t.checked }); CLIENTS[t.dataset.blockClient].blocked = t.checked; toast(t.checked ? "Client blocat pentru programări online" : "Client deblocat"); }
+  } catch (err) { alert(err.message); }
+});
+$("#clientsCsv").onclick = () => downloadCsv("clienti.csv", [["Nume", "Telefon", "Vizite", "Neprezentari", "Anulari", "Prima programare", "Ultima vizita", "Nota", "Blocat"],
+  ...Object.entries(CLIENTS).map(([p, c]) => [c.name, p, c.visits, c.noshows, c.cancels, c.first, c.last || "", c.note, c.blocked ? "da" : ""])]);
+
+function downloadCsv(name, rows) {
+  const csv = "﻿" + rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(";")).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  a.download = name; a.click();
+}
+
+/* ---------- rapoarte ---------- */
+function setRange(kind) {
+  const t = localToday(); let from, to;
+  if (kind === "week") { from = addDays(t, -((dow(t) + 6) % 7)); to = addDays(from, 6); }
+  if (kind === "month") { from = t.slice(0, 8) + "01"; to = addDays(addDays(from, 32).slice(0, 8) + "01", -1); }
+  if (kind === "last") { to = addDays(t.slice(0, 8) + "01", -1); from = to.slice(0, 8) + "01"; }
+  $("#repFrom").value = from; $("#repTo").value = to;
+}
+$$("[data-range]").forEach((b) => (b.onclick = () => { setRange(b.dataset.range); runReport(); }));
+let REP = null;
+$("#repRun").onclick = () => runReport();
+async function runReport() {
+  $("#repOut").innerHTML = '<div class="empty">Se calculează…</div>';
+  try {
+    const { days } = await api(`range?from=${$("#repFrom").value}&to=${$("#repTo").value}`);
+    REP = Object.values(days).flatMap((d) => d.bookings);
+    const per = {};
+    for (const b of REP) {
+      const p = (per[b.barber] ??= { total: 0, done: 0, noshow: 0, cancelled: 0, online: 0, est: 0 });
+      if (b.status === "cancelled") { p.cancelled++; continue; }
+      p.total++; if (b.source === "online") p.online++;
+      if (b.status === "done") p.done++;
+      if (b.status === "noshow") p.noshow++; else p.est += b.price || 0;
+    }
+    const sum = Object.values(per).reduce((a, p) => { for (const k in p) a[k] = (a[k] || 0) + p[k]; return a; }, {});
+    const svc = {};
+    REP.filter((b) => b.status !== "cancelled").forEach((b) => (svc[b.serviceName] = (svc[b.serviceName] || 0) + 1));
+    $("#repOut").innerHTML = `
+      <div class="kpis">
+        <div class="kpi"><small>Programări</small><b>${sum.total || 0}</b></div>
+        <div class="kpi"><small>Încasări estimate</small><b>${lei(sum.est || 0)}</b></div>
+        <div class="kpi"><small>Online</small><b>${sum.total ? Math.round((sum.online / sum.total) * 100) : 0}%</b></div>
+        <div class="kpi"><small>Neprezentări</small><b>${sum.total ? Math.round((sum.noshow / sum.total) * 100) : 0}%</b></div>
+      </div>
+      <div class="card tbl"><h3>Pe frizer</h3><p>Încasările estimate folosesc prețul minim al serviciului.</p>
+        <table><thead><tr><th>Frizer</th><th>Programări</th><th>Au venit</th><th>Neprezentați</th><th>Anulate</th><th>Online</th><th>Estimat</th></tr></thead><tbody>
+        ${Object.entries(per).map(([id, p]) => `<tr><td><b>${esc(barberName(id))}</b></td><td>${p.total}</td><td>${p.done}</td><td>${p.noshow}</td><td>${p.cancelled}</td><td>${p.online}</td><td>${lei(p.est)}</td></tr>`).join("") || '<tr><td colspan="7" class="muted">Nicio programare în perioada aleasă.</td></tr>'}
+        </tbody></table></div>
+      <div class="card tbl"><h3>Cele mai cerute servicii</h3>
+        <table><tbody>${Object.entries(svc).sort((a, b) => b[1] - a[1]).map(([n, c]) => `<tr><td>${esc(n)}</td><td style="text-align:right"><b>${c}</b></td></tr>`).join("")}</tbody></table></div>`;
+  } catch (e) { $("#repOut").innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+$("#repCsv").onclick = async () => {
+  if (!REP) await runReport();
+  downloadCsv(`programari_${$("#repFrom").value}_${$("#repTo").value}.csv`, [["Data", "Ora", "Sfarsit", "Frizer", "Client", "Telefon", "Serviciu", "Pret", "Status", "Sursa", "Nota"],
+    ...REP.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)).map((b) => [b.date, b.start, b.end, barberName(b.barber), b.name, b.phone, b.serviceName, b.price, STATUS[b.status], b.source, b.note])]);
+};
+
+/* ---------- setări ---------- */
+const daySel = (name, sel) => `<div class="daysel">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<label><input type="checkbox" name="${name}" value="${d}" ${sel.includes(d) ? "checked" : ""}>${ZS[d]}</label>`).join("")}</div>`;
+function svcRow(s = { name: "", desc: "", duration: 30, price: 0, priceMax: 0, active: true }) {
+  return `<div class="row svc" data-id="${esc(s.id || "")}">
+    <label class="f"><span>Serviciu</span><input data-k="name" value="${esc(s.name)}" required></label>
+    <label class="f wide"><span>Descriere</span><input data-k="desc" value="${esc(s.desc || "")}"></label>
+    <label class="f"><span>Minute</span><input data-k="duration" type="number" min="5" step="5" value="${s.duration}"></label>
+    <label class="f"><span>Preț de la</span><input data-k="price" type="number" min="0" value="${s.price}"></label>
+    <label class="f"><span>Preț până la</span><input data-k="priceMax" type="number" min="0" value="${s.priceMax || s.price}"></label>
+    <div style="display:flex;gap:8px;align-items:center;height:42px"><label class="ck"><input type="checkbox" data-k="active" ${s.active ? "checked" : ""}> Activ</label><button type="button" class="btn ghost sm" data-del>✕</button></div>
+  </div>`;
+}
+function brbRow(b = { name: "", phone: "", notify: false, active: true, days: S.days }) {
+  return `<div class="row brb" data-id="${esc(b.id || "")}">
+    <label class="f"><span>Nume</span><input data-k="name" value="${esc(b.name)}" required></label>
+    <label class="f"><span>Telefon (pt. notificări)</span><input data-k="phone" type="tel" value="${esc(b.phone || "")}" placeholder="07xx"></label>
+    <div class="wide"><span class="muted" style="font-size:12px;display:block;margin-bottom:5px">Zile de lucru</span>${daySel("bd_" + (b.id || Math.random().toString(36).slice(2)), b.days?.length ? b.days : S.days)}</div>
+    <label class="ck"><input type="checkbox" data-k="notify" ${b.notify ? "checked" : ""}> SMS la programare nouă</label>
+    <div style="display:flex;gap:8px;align-items:center"><label class="ck"><input type="checkbox" data-k="active" ${b.active ? "checked" : ""}> Activ</label><button type="button" class="btn ghost sm" data-del>✕</button></div>
+  </div>`;
+}
+function renderSettings() {
+  const f = $("#setForm");
+  f.innerHTML = `
+  <div class="card"><h3>Salonul</h3><p>Apare pe pagina clienților și în SMS-uri.</p><div class="two">
+    <label class="f"><span>Nume salon</span><input name="salonName" value="${esc(S.salonName)}"></label>
+    <label class="f"><span>Subtitlu</span><input name="tagline" value="${esc(S.tagline)}"></label>
+    <label class="f"><span>Telefon salon</span><input name="phone" value="${esc(S.phone)}" placeholder="07xx xxx xxx"></label>
+    <label class="f"><span>Instagram</span><input name="instagram" value="${esc(S.instagram)}" placeholder="@nextlevel"></label>
+    <label class="f"><span>Adresă</span><input name="address" value="${esc(S.address)}" placeholder="Str. ..., oraș"></label>
+    <label class="f"><span>Link Google Maps</span><input name="mapsUrl" value="${esc(S.mapsUrl)}" placeholder="https://maps.app.goo.gl/..."></label>
+  </div></div>
+
+  <div class="card"><h3>Program</h3><p>Programul salonului. Fiecare frizer poate avea mai jos zilele lui.</p><div class="two">
+    <label class="f"><span>Deschidere</span><input type="time" name="open" value="${S.open}"></label>
+    <label class="f"><span>Închidere</span><input type="time" name="close" value="${S.close}"></label>
+    <div><span class="muted" style="font-size:12px;display:block;margin-bottom:5px">Zile deschise</span>${daySel("days", S.days)}</div>
+  </div></div>
+
+  <div class="card"><h3>Frizeri</h3><p>Debifează „Activ” ca să-l ascunzi de la programări fără să-i pierzi istoricul.</p>
+    <div class="rows" id="brbRows">${S.barbers.map(brbRow).join("")}</div>
+    <button type="button" class="btn ghost sm" id="addBrb" style="margin-top:10px">+ Adaugă frizer</button></div>
+
+  <div class="card"><h3>Servicii și prețuri</h3><p>„Minute” = cât timp blochează în calendar.</p>
+    <div class="rows" id="svcRows">${S.services.map(svcRow).join("")}</div>
+    <button type="button" class="btn ghost sm" id="addSvc" style="margin-top:10px">+ Adaugă serviciu</button></div>
+
+  <div class="card"><h3>Reguli programări</h3><div class="two">
+    <label class="f"><span>Pas orar (minute)</span><select name="slotStep">${[5, 10, 15, 20, 30, 60].map((n) => `<option ${n === S.slotStep ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <label class="f"><span>Minim înainte (minute)</span><input type="number" name="minLeadMinutes" value="${S.minLeadMinutes}"><div class="hint">Cât de devreme se poate programa cineva pentru azi.</div></label>
+    <label class="f"><span>Cu câte zile înainte</span><input type="number" name="maxDaysAhead" value="${S.maxDaysAhead}"></label>
+    <label class="f"><span>Anulare online până cu (ore)</span><input type="number" name="cancelHours" value="${S.cancelHours}"></label>
+    <label class="f"><span>Max. programări active / telefon</span><input type="number" name="maxUpcomingPerPhone" value="${S.maxUpcomingPerPhone}"></label>
+  </div></div>
+
+  <div class="card"><h3>SMS</h3><p>Variabile: {nume} {salon} {zi} {ora} {frizer} {serviciu} {link} {telefon}. Scrie fără diacritice: sub 160 de caractere = 1 SMS.</p>
+    <div class="rows">
+      <label class="ck"><input type="checkbox" name="smsConfirm" ${S.smsConfirm ? "checked" : ""}> SMS de confirmare imediat după programare</label>
+      <label class="f"><span>Text confirmare <i class="cnt"></i></span><textarea name="smsConfirmText" rows="2">${esc(S.smsConfirmText)}</textarea></label>
+      <label class="ck"><input type="checkbox" name="smsReminder" ${S.smsReminder ? "checked" : ""}> Reminder cu o zi înainte (pleacă la ora 10:00)</label>
+      <label class="f"><span>Text reminder <i class="cnt"></i></span><textarea name="smsReminderText" rows="2">${esc(S.smsReminderText)}</textarea></label>
+      <label class="f"><span>Text notificare către frizer <i class="cnt"></i></span><textarea name="smsBarberText" rows="2">${esc(S.smsBarberText)}</textarea></label>
+      <div class="toolbar"><input type="tel" id="testPhone" placeholder="07xx — trimite un SMS de test" style="max-width:260px"><button type="button" class="btn ghost sm" id="testSms">Trimite test</button></div>
+    </div></div>
+
+  <div class="card"><h3>Linkuri utile</h3><p>Pagina clienților: <a href="/" target="_blank">${location.origin}/</a> — pune-o în bio pe Instagram, pe Google Maps și pe Facebook.</p>
+    <button type="button" class="btn ghost sm" id="logout">Ieși din cont pe acest telefon</button></div>
+
+  <div class="savebar"><button class="btn" type="submit">Salvează setările</button></div>`;
+
+  const counter = () => $$("textarea", f).forEach((t) => {
+    const n = t.value.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\{link\}/g, "x".repeat(45)).replace(/\{\w+\}/g, "xxxxxxxx").length;
+    t.closest("label").querySelector(".cnt").textContent = `(~${n} caractere, ${n <= 160 ? 1 : Math.ceil(n / 153)} SMS)`;
+  });
+  counter(); f.oninput = counter;
+  $("#addSvc").onclick = () => $("#svcRows").insertAdjacentHTML("beforeend", svcRow());
+  $("#addBrb").onclick = () => $("#brbRows").insertAdjacentHTML("beforeend", brbRow());
+  f.onclick = (e) => { const d = e.target.closest("[data-del]"); if (d && confirm("Ștergi rândul?")) d.closest(".row").remove(); };
+  $("#logout").onclick = logout;
+  $("#testSms").onclick = async () => {
+    try { await api("sms", { phone: $("#testPhone").value }); toast("SMS trimis"); } catch (e) { alert(e.message); }
+  };
+  f.onsubmit = async (e) => {
+    e.preventDefault();
+    const fd = new FormData(f);
+    const rowData = (sel) => $$(sel, f).map((r) => {
+      const o = { id: r.dataset.id || undefined };
+      $$("[data-k]", r).forEach((i) => (o[i.dataset.k] = i.type === "checkbox" ? i.checked : i.type === "number" ? +i.value : i.value));
+      const days = $$(".daysel input:checked", r).map((i) => +i.value);
+      if ($(".daysel", r)) o.days = days;
+      return o;
+    });
+    const body = {
+      ...Object.fromEntries(["salonName", "tagline", "phone", "instagram", "address", "mapsUrl", "open", "close", "smsConfirmText", "smsReminderText", "smsBarberText",
+        "slotStep", "minLeadMinutes", "maxDaysAhead", "cancelHours", "maxUpcomingPerPhone"].map((k) => [k, fd.get(k)])),
+      days: fd.getAll("days").map(Number),
+      smsConfirm: f.smsConfirm.checked, smsReminder: f.smsReminder.checked,
+      barbers: rowData("#brbRows .row"), services: rowData("#svcRows .row"),
+    };
+    try { S = (await api("settings", body)).settings; toast("Setări salvate"); renderChips(); renderSettings(); $("#salonName").textContent = S.salonName.toUpperCase(); }
+    catch (err) { alert(err.message); }
+  };
+}
+</script>
+</body>
+</html>
