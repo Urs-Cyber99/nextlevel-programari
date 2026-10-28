@@ -21,3 +21,14 @@
   [headers.values]
     X-Robots-Tag = "noindex"
     X-Frame-Options = "DENY"
+
+# service worker-ul trebuie verificat la fiecare vizită, ca actualizările să ajungă imediat
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/*.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"

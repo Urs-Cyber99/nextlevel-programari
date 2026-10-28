@@ -7,7 +7,7 @@ import handler from "../netlify/functions/api.mjs";
 import { nowLocal, addDays, dow } from "../netlify/lib/core.mjs";
 
 const PUB = new URL("../public/", import.meta.url).pathname;
-const TYPES = { ".html": "text/html; charset=utf-8", ".jpg": "image/jpeg", ".css": "text/css", ".js": "text/javascript" };
+const TYPES = { ".html": "text/html; charset=utf-8", ".jpg": "image/jpeg", ".png": "image/png", ".css": "text/css", ".js": "text/javascript", ".webmanifest": "application/manifest+json" };
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");

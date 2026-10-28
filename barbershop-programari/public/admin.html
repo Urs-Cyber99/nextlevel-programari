@@ -6,6 +6,13 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Admin · Programări</title>
 <meta name="theme-color" content="#0b0b0c">
+<link rel="manifest" href="/manifest-admin.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/admin-apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NL Admin">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -282,6 +289,15 @@ function toast(msg) {
 const barberName = (id) => (id === "all" ? "Toți" : S.barbers.find((b) => b.id === id)?.name || id);
 const priceTxt = (s) => (s.priceMax && s.priceMax > s.price ? `${s.price}–${s.priceMax} lei` : `${s.price} lei`);
 const worksOn = (b, date) => (b.days?.length ? b.days : S.days).filter((d) => S.days.includes(d)).includes(dow(date));
+
+/* ---------- aplicația pe telefon (PWA) ---------- */
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); window.__adminInstall = e; $$(".js-install-admin").forEach((b) => (b.hidden = false)); });
+document.addEventListener("click", async (e) => {
+  if (!e.target.closest(".js-install-admin") || !window.__adminInstall) return;
+  window.__adminInstall.prompt(); await window.__adminInstall.userChoice; window.__adminInstall = null;
+  $$(".js-install-admin").forEach((b) => (b.hidden = true));
+});
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 
 /* ---------- login ---------- */
 $("#loginForm").addEventListener("submit", async (e) => {
@@ -753,6 +769,10 @@ function renderSettings() {
       <label class="f"><span>Text notificare către frizer <i class="cnt"></i></span><textarea name="smsBarberText" rows="2">${esc(S.smsBarberText)}</textarea></label>
       <div class="toolbar"><input type="tel" id="testPhone" placeholder="07xx — trimite un SMS de test" style="max-width:260px"><button type="button" class="btn ghost sm" id="testSms">Trimite test</button></div>
     </div></div>
+
+  <div class="card"><h3>Calendarul pe telefon</h3><p>Pune admin-ul ca aplicație pe telefonul fiecărui frizer: se deschide direct în calendar, fără parola de fiecare dată.</p>
+    <p class="muted" style="font-size:13px;margin-bottom:10px"><b style="color:var(--ink)">iPhone:</b> deschide ${location.origin}/admin în Safari → Partajează ⬆︎ → Adaugă pe ecranul principal.<br><b style="color:var(--ink)">Android:</b> în Chrome, meniul ⋮ → Instalează aplicația.</p>
+    <button type="button" class="btn ghost sm js-install-admin" ${window.__adminInstall ? "" : "hidden"}>Instalează acum</button></div>
 
   <div class="card"><h3>Linkuri utile</h3><p>Pagina clienților: <a href="/" target="_blank">${location.origin}/</a> — pune-o în bio pe Instagram, pe Google Maps și pe Facebook.</p>
     <button type="button" class="btn ghost sm" id="logout">Ieși din cont pe acest telefon</button></div>

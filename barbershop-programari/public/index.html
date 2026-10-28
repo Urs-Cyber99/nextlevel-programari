@@ -9,7 +9,13 @@
 <meta property="og:title" content="Next Level Barbershop · Programări online">
 <meta property="og:description" content="Alege serviciul, frizerul și ora. Confirmare și reminder prin SMS.">
 <meta property="og:image" content="/img/salon-hero.jpg">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 3 57 17.5v29L32 61 7 46.5v-29z' fill='%230b0b0c' stroke='%23fff' stroke-width='3'/%3E%3Ctext x='32' y='42' font-family='serif' font-size='26' fill='%23fff' text-anchor='middle'%3ENL%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Next Level">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -161,6 +167,16 @@ input:focus{outline:2px solid var(--ink);outline-offset:1px}
 .where img{width:100%;height:100%;min-height:320px;object-fit:cover;object-position:center 60%}
 .where-t{padding:28px 28px 28px 0}
 @media (max-width:760px){.where{grid-template-columns:1fr;gap:0}.where img{min-height:220px;max-height:280px}.where-t{padding:22px}}
+.install-hint{margin-top:22px;font-size:14px;color:var(--muted)}
+.link{text-decoration:underline;text-underline-offset:3px;color:var(--ink);font-weight:600}
+.isheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;justify-content:center}
+.isheet>div{background:var(--panel);border:1px solid var(--line);border-radius:22px 22px 0 0;width:100%;max-width:460px;padding:26px 22px calc(26px + env(safe-area-inset-bottom));animation:in .25s ease}
+@media (min-width:700px){.isheet{align-items:center}.isheet>div{border-radius:22px}}
+.isheet h3{font:700 22px Cinzel,serif;margin-bottom:6px;display:flex;align-items:center;gap:12px}
+.isheet h3 img{width:44px;height:44px;border-radius:10px}
+.isheet ol{margin:16px 0 20px 20px;display:grid;gap:12px;color:#d9d8dc}
+.isheet ol b{color:var(--ink)}
+.isheet .ico{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:7px;background:var(--line2);vertical-align:middle;margin:0 2px}
 footer{border-top:1px solid var(--line);padding:40px 0 60px;color:var(--muted);font-size:14px}
 footer .wrap{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 footer b{color:var(--ink);display:block;margin-bottom:6px}
@@ -179,7 +195,10 @@ footer b{color:var(--ink);display:block;margin-bottom:6px}
 <header>
   <div class="wrap">
     <a class="brand" href="#top"><span class="mono">NL</span><span><b class="js-name">NEXT LEVEL</b><small class="js-tag">Barbershop</small></span></a>
-    <a class="btn sm ghost js-call" href="#" hidden>Sună</a>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm js-install" hidden>Instalează</button>
+      <a class="btn sm ghost js-call" href="#" hidden>Sună</a>
+    </div>
   </div>
 </header>
 
@@ -250,6 +269,7 @@ footer b{color:var(--ink);display:block;margin-bottom:6px}
         <a class="btn sm ghost" id="cancelLink" href="#">Anulează</a>
         <button class="btn sm ghost" id="again">Programare nouă</button>
       </div>
+      <p class="install-hint js-install-hint" hidden>Te programezi des? <button class="link js-install">Pune aplicația pe telefon</button> și data viitoare durează 10 secunde.</p>
     </div>
   </div>
 </section>
@@ -531,6 +551,39 @@ $("#ics").addEventListener("click", () => {
 
 // butonul flotant dispare când formularul e pe ecran
 new IntersectionObserver(([e]) => $("#fab").classList.toggle("hide", e.isIntersecting), { threshold: 0.05 }).observe($("#programare"));
+
+/* ---------- aplicația pe telefon (PWA) ---------- */
+let installEvt = null;
+const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const showInstall = (on) => document.querySelectorAll(".js-install, .js-install-hint").forEach((e) => (e.hidden = !on));
+if (!standalone && (isIOS || /android/i.test(navigator.userAgent))) showInstall(true);
+addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; if (!standalone) showInstall(true); });
+addEventListener("appinstalled", () => { showInstall(false); installEvt = null; });
+document.addEventListener("click", async (e) => {
+  if (!e.target.closest(".js-install")) return;
+  if (installEvt) { installEvt.prompt(); const r = await installEvt.userChoice; if (r.outcome === "accepted") showInstall(false); installEvt = null; return; }
+  installSheet();
+});
+function installSheet() {
+  const steps = isIOS
+    ? `<li>Apasă butonul <b>Partajează</b> <span class="ico">⬆︎</span> din bara de jos a Safari.</li>
+       <li>Derulează și alege <b>Adaugă pe ecranul principal</b> <span class="ico">＋</span>.</li>
+       <li>Apasă <b>Adaugă</b>. Iconița Next Level apare pe ecranul telefonului.</li>`
+    : `<li>Apasă meniul <b>⋮</b> din colțul browserului.</li>
+       <li>Alege <b>Instalează aplicația</b> sau <b>Adaugă pe ecranul de pornire</b>.</li>
+       <li>Confirmă. Iconița Next Level apare pe ecranul telefonului.</li>`;
+  const el = document.createElement("div");
+  el.className = "isheet";
+  el.innerHTML = `<div><h3><img src="/icons/icon-192.png" alt="">Next Level pe telefon</h3>
+    <p class="muted" style="color:var(--muted)">Te programezi direct din iconiță, fără să cauți site-ul.</p>
+    <ol>${steps}</ol>
+    ${isIOS && !/safari/i.test(navigator.userAgent.replace(/crios|fxios|edgios/i, "x")) ? '<p style="color:var(--muted);font-size:13px;margin-bottom:16px">Pe iPhone merge doar din Safari. Deschide site-ul în Safari și urmează pașii.</p>' : ""}
+    <button class="btn" style="width:100%">Am înțeles</button></div>`;
+  el.addEventListener("click", (e) => { if (e.target === el || e.target.closest("button")) el.remove(); });
+  document.body.append(el);
+}
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 
 api("settings").then((s) => { S = s; renderInfo(); })
   .catch(() => ($("#services").innerHTML = '<div class="empty">Programările online nu sunt disponibile acum. Te rugăm să ne suni.</div>'));
