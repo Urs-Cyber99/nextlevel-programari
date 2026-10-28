@@ -3,6 +3,12 @@ import { sendSms } from "./sms.mjs";
 
 export const TZ = "Europe/Bucharest";
 
+// Prețuri pe frizer, din intervalul de pe listă: Andi = minim, Lazarescu = mijloc, Radu și Ionita = maxim
+const tiers = (min, max) => {
+  const mid = Math.round((min + max) / 2 / 5) * 5;
+  return { andi: min, lazarescu: mid, radu: max, ionita: max };
+};
+
 export const DEFAULT_SETTINGS = {
   salonName: "Next Level",
   tagline: "Barbershop",
@@ -25,15 +31,16 @@ export const DEFAULT_SETTINGS = {
     { id: "lazarescu", name: "Lazarescu", phone: "", notify: false, active: true, days: [1, 2, 3, 4, 5, 6] },
     { id: "ionita", name: "Ionita", phone: "", notify: false, active: true, days: [1, 2, 3, 4, 5, 6] },
   ],
-  // duration = cât blochează în calendar (limita de sus); price / priceMax = interval de preț
+  // duration = cât blochează în calendar; prices = prețul exact la fiecare frizer
+  // (price / priceMax se recalculează automat ca interval min–max dintre frizeri)
   services: [
-    { id: "tuns-barbati", name: "Tuns bărbați", desc: "Tuns pentru domni", duration: 40, price: 50, priceMax: 100, active: true },
-    { id: "tuns-barba", name: "Tuns și aranjat barbă", desc: "Tuns, scurtat barba și contur", duration: 60, price: 70, priceMax: 110, active: true },
-    { id: "pachet-exclusiv", name: "Pachet Exclusiv", desc: "Tuns, aranjat barbă, contur, spălat, styling", duration: 60, price: 80, priceMax: 150, active: true },
-    { id: "tuns-clasic", name: "Tuns Clasic", desc: "Nr. 1 laterale", duration: 30, price: 40, priceMax: 60, active: true },
-    { id: "aranjat-barba", name: "Aranjat barbă", desc: "Tuns barba și contur", duration: 20, price: 20, priceMax: 40, active: true },
-    { id: "tuns-copii", name: "Tuns copii", desc: "Doar pentru copii sub 14 ani", duration: 30, price: 40, priceMax: 60, active: true },
-    { id: "spalat-par", name: "Spălat păr", desc: "Spălat păr și scalp", duration: 10, price: 20, priceMax: 20, active: true },
+    { id: "tuns-barbati", name: "Tuns bărbați", desc: "Tuns pentru domni", duration: 40, price: 50, priceMax: 100, prices: tiers(50, 100), active: true },
+    { id: "tuns-barba", name: "Tuns și aranjat barbă", desc: "Tuns, scurtat barba și contur", duration: 60, price: 70, priceMax: 110, prices: tiers(70, 110), active: true },
+    { id: "pachet-exclusiv", name: "Pachet Exclusiv", desc: "Tuns, aranjat barbă, contur, spălat, styling", duration: 60, price: 80, priceMax: 150, prices: tiers(80, 150), active: true },
+    { id: "tuns-clasic", name: "Tuns Clasic", desc: "Nr. 1 laterale", duration: 30, price: 40, priceMax: 60, prices: tiers(40, 60), active: true },
+    { id: "aranjat-barba", name: "Aranjat barbă", desc: "Tuns barba și contur", duration: 20, price: 20, priceMax: 40, prices: tiers(20, 40), active: true },
+    { id: "tuns-copii", name: "Tuns copii", desc: "Doar pentru copii sub 14 ani", duration: 30, price: 40, priceMax: 60, prices: tiers(40, 60), active: true },
+    { id: "spalat-par", name: "Spălat păr", desc: "Spălat păr și scalp", duration: 10, price: 20, priceMax: 20, prices: tiers(20, 20), active: true },
   ],
   smsConfirm: true,
   smsReminder: true,
@@ -89,7 +96,22 @@ export async function loadSettings(db) {
   const s = { ...DEFAULT_SETTINGS, ...(data || {}) };
   if (!Array.isArray(s.barbers) || !s.barbers.length) s.barbers = DEFAULT_SETTINGS.barbers;
   if (!Array.isArray(s.services) || !s.services.length) s.services = DEFAULT_SETTINGS.services;
+  s.services = s.services.map((x) => withRange(s, x));
   return s;
+}
+
+/** Prețul serviciului la un anumit frizer (dacă nu are preț propriu, prețul de bază). */
+export function priceFor(svc, barberId) {
+  const p = svc.prices?.[barberId];
+  return Number.isFinite(+p) && p !== "" && p !== null ? +p : svc.price;
+}
+
+/** Recalculează intervalul min–max al serviciului din prețurile frizerilor activi. */
+export function withRange(s, svc) {
+  const active = s.barbers.filter((b) => b.active);
+  const vals = active.map((b) => priceFor(svc, b.id)).filter((n) => Number.isFinite(n));
+  if (!vals.length) return { ...svc, priceMax: svc.priceMax || svc.price };
+  return { ...svc, price: Math.min(...vals), priceMax: Math.max(...vals) };
 }
 
 export function publicSettings(s) {
@@ -98,7 +120,10 @@ export function publicSettings(s) {
     phone: s.phone, instagram: s.instagram, open: s.open, close: s.close, days: s.days,
     maxDaysAhead: s.maxDaysAhead, cancelHours: s.cancelHours,
     barbers: s.barbers.filter((b) => b.active).map(({ id, name, days }) => ({ id, name, days: barberDays(s, { days }) })),
-    services: s.services.filter((x) => x.active).map(({ id, name, desc, duration, price, priceMax }) => ({ id, name, desc: desc || "", duration, price, priceMax: priceMax || price })),
+    services: s.services.filter((x) => x.active).map((x) => ({
+      id: x.id, name: x.name, desc: x.desc || "", duration: x.duration, price: x.price, priceMax: x.priceMax || x.price,
+      prices: Object.fromEntries(s.barbers.filter((b) => b.active).map((b) => [b.id, priceFor(x, b.id)])),
+    })),
   };
 }
 

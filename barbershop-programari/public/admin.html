@@ -125,7 +125,8 @@ main{max-width:1280px;margin:0 auto;padding:16px 16px 100px}
 .card>p{color:var(--muted);font-size:13px;margin-bottom:12px}
 .rows{display:grid;gap:10px}
 .row{display:grid;gap:8px;align-items:end;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2)}
-.row.svc{grid-template-columns:2fr 2fr 80px 80px 80px auto}
+.row.svc{grid-template-columns:2fr 2fr 90px auto}
+.prices-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
 .row.brb{grid-template-columns:1.2fr 1.2fr auto auto auto}
 .daysel{display:flex;gap:4px;flex-wrap:wrap}
 .daysel label{display:grid;place-items:center;width:38px;height:34px;border-radius:8px;border:1px solid var(--line2);font-size:12px;font-weight:700;cursor:pointer;user-select:none}
@@ -444,6 +445,7 @@ function timeOptions(sel) {
 const barberOptions = (sel, all) => (all ? `<option value="all" ${sel === "all" ? "selected" : ""}>Toți frizerii</option>` : "") +
   S.barbers.map((b) => `<option value="${esc(b.id)}" ${b.id === sel ? "selected" : ""}>${esc(b.name)}${b.active ? "" : " (inactiv)"}</option>`).join("");
 const serviceOptions = (sel) => S.services.map((s) => `<option value="${esc(s.id)}" ${s.id === sel ? "selected" : ""}>${esc(s.name)} · ${s.duration} min · ${priceTxt(s)}</option>`).join("");
+const priceAt = (svc, barberId) => svc?.prices?.[barberId] ?? svc?.price;
 
 function openBooking(b) {
   const tel = b.phone ? b.phone.replace(/^0/, "40") : "";
@@ -490,6 +492,7 @@ function openEdit(b) {
       <label class="f"><span>Frizer</span><select name="barber">${barberOptions(b.barber)}</select></label>
       <label class="f"><span>Durată (min)</span><input type="number" name="duration" value="${b.duration}" min="5" step="5"></label>
       <label class="f full"><span>Serviciu</span><select name="serviceId">${serviceOptions(b.serviceId)}</select></label>
+      <div class="full pinfo muted" style="font-size:13px"></div>
       <label class="f"><span>Nume</span><input name="name" value="${esc(b.name)}"></label>
       <label class="f"><span>Telefon</span><input name="phone" type="tel" value="${esc(b.phone)}"></label>
       <label class="f full"><span>Notă internă</span><input name="note" value="${esc(b.note || "")}"></label>
@@ -498,6 +501,7 @@ function openEdit(b) {
     <div class="acts"><button class="btn" type="submit">Salvează</button></div>
     <div class="err" id="merr"></div></form>`);
   const f = $("#ef", sheet);
+  bindPrice(f);
   f.serviceId.onchange = () => (f.duration.value = S.services.find((s) => s.id === f.serviceId.value)?.duration || f.duration.value);
   f.onsubmit = async (e) => {
     e.preventDefault();
@@ -506,6 +510,17 @@ function openEdit(b) {
     try { await saveWithForce("edit", body); closeModal(); toast("Programare mutată"); setDate(body.newDate); }
     catch (err) { $("#merr").textContent = err.message; }
   };
+}
+
+// arată prețul serviciului la frizerul ales, în formularele de programare
+function bindPrice(f) {
+  const upd = () => {
+    const svc = S.services.find((x) => x.id === f.serviceId.value);
+    f.querySelector(".pinfo").textContent = svc ? `Preț la ${barberName(f.barber.value)}: ${priceAt(svc, f.barber.value)} lei` : "";
+  };
+  f.serviceId.addEventListener("change", upd);
+  f.barber.addEventListener("change", upd);
+  upd();
 }
 
 async function saveWithForce(path, body) {
@@ -525,6 +540,7 @@ function openNew({ barber, time }) {
       <label class="f"><span>Frizer</span><select name="barber">${barberOptions(barber)}</select></label>
       <label class="f"><span>Durată (min)</span><input type="number" name="duration" value="${S.services[0].duration}" min="5" step="5"></label>
       <label class="f full"><span>Serviciu</span><select name="serviceId">${serviceOptions(S.services[0].id)}</select></label>
+      <div class="full pinfo muted" style="font-size:13px"></div>
       <label class="f"><span>Nume client</span><input name="name" required placeholder="Ex: Mihai"></label>
       <label class="f"><span>Telefon (opțional)</span><input name="phone" type="tel" placeholder="07xx xxx xxx"></label>
       <label class="f full"><span>Notă internă</span><input name="note" placeholder="Ex: preferă mașina 2"></label>
@@ -533,6 +549,7 @@ function openNew({ barber, time }) {
     <div class="acts"><button class="btn" type="submit">Salvează programarea</button></div>
     <div class="err" id="merr"></div></form>`);
   const f = $("#nf", sheet);
+  bindPrice(f);
   f.serviceId.onchange = () => (f.duration.value = S.services.find((s) => s.id === f.serviceId.value)?.duration || 30);
   f.name.focus();
   f.onsubmit = async (e) => {
@@ -674,14 +691,14 @@ $("#repCsv").onclick = async () => {
 
 /* ---------- setări ---------- */
 const daySel = (name, sel) => `<div class="daysel">${[1, 2, 3, 4, 5, 6, 0].map((d) => `<label><input type="checkbox" name="${name}" value="${d}" ${sel.includes(d) ? "checked" : ""}>${ZS[d]}</label>`).join("")}</div>`;
-function svcRow(s = { name: "", desc: "", duration: 30, price: 0, priceMax: 0, active: true }) {
+function svcRow(s = { name: "", desc: "", duration: 30, price: 0, prices: {}, active: true }) {
+  const bs = S.barbers.filter((b) => b.active);
   return `<div class="row svc" data-id="${esc(s.id || "")}">
     <label class="f"><span>Serviciu</span><input data-k="name" value="${esc(s.name)}" required></label>
     <label class="f wide"><span>Descriere</span><input data-k="desc" value="${esc(s.desc || "")}"></label>
     <label class="f"><span>Minute</span><input data-k="duration" type="number" min="5" step="5" value="${s.duration}"></label>
-    <label class="f"><span>Preț de la</span><input data-k="price" type="number" min="0" value="${s.price}"></label>
-    <label class="f"><span>Preț până la</span><input data-k="priceMax" type="number" min="0" value="${s.priceMax || s.price}"></label>
     <div style="display:flex;gap:8px;align-items:center;height:42px"><label class="ck"><input type="checkbox" data-k="active" ${s.active ? "checked" : ""}> Activ</label><button type="button" class="btn ghost sm" data-del>✕</button></div>
+    <div class="wide prices-row">${bs.map((b) => `<label class="f"><span>${esc(b.name)} (lei)</span><input data-price="${esc(b.id)}" type="number" min="0" value="${s.prices?.[b.id] ?? s.price}"></label>`).join("")}</div>
   </div>`;
 }
 function brbRow(b = { name: "", phone: "", notify: false, active: true, days: S.days }) {
@@ -715,7 +732,7 @@ function renderSettings() {
     <div class="rows" id="brbRows">${S.barbers.map(brbRow).join("")}</div>
     <button type="button" class="btn ghost sm" id="addBrb" style="margin-top:10px">+ Adaugă frizer</button></div>
 
-  <div class="card"><h3>Servicii și prețuri</h3><p>„Minute” = cât timp blochează în calendar.</p>
+  <div class="card"><h3>Servicii și prețuri</h3><p>„Minute” = cât timp blochează în calendar. Fiecare frizer are prețul lui; clienții îl văd după ce aleg frizerul.</p>
     <div class="rows" id="svcRows">${S.services.map(svcRow).join("")}</div>
     <button type="button" class="btn ghost sm" id="addSvc" style="margin-top:10px">+ Adaugă serviciu</button></div>
 
@@ -760,6 +777,8 @@ function renderSettings() {
     const rowData = (sel) => $$(sel, f).map((r) => {
       const o = { id: r.dataset.id || undefined };
       $$("[data-k]", r).forEach((i) => (o[i.dataset.k] = i.type === "checkbox" ? i.checked : i.type === "number" ? +i.value : i.value));
+      const pr = $$("[data-price]", r);
+      if (pr.length) { o.prices = Object.fromEntries(pr.map((i) => [i.dataset.price, i.value === "" ? null : +i.value])); o.price = Math.min(...pr.map((i) => +i.value || 0)); }
       const days = $$(".daysel input:checked", r).map((i) => +i.value);
       if ($(".daysel", r)) o.days = days;
       return o;

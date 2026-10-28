@@ -98,6 +98,9 @@ h2{font:700 clamp(26px,5vw,38px)/1.1 Cinzel,serif;letter-spacing:.05em;margin-bo
 .barber.sel .av{background:var(--ink);color:var(--bg)}
 .av.any{font:600 22px Manrope}
 .barber small{color:var(--muted);font-size:12px}
+.barber .bp{font-weight:700;font-size:15px;padding:4px 12px;border-radius:999px;background:var(--line);margin-top:2px}
+.barber.sel .bp{background:var(--ink);color:var(--bg)}
+.price small.per{color:var(--dim);font-size:12px;margin-top:2px}
 
 .dates{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:thin}
 .date{flex:none;width:68px;padding:10px 0;border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);text-align:center;scroll-snap-align:start}
@@ -293,7 +296,7 @@ footer b{color:var(--ink);display:block;margin-bottom:6px}
 <section id="preturi" style="padding-top:0">
   <div class="wrap">
     <h2>Prețuri</h2>
-    <p class="lead">Prețul final depinde de lungimea părului și de complexitate.</p>
+    <p class="lead">Fiecare frizer are prețul lui. Îl vezi exact când îți alegi frizerul la programare.</p>
     <div class="prices" id="prices"></div>
   </div>
 </section>
@@ -317,6 +320,10 @@ const LUNI = ["ian", "feb", "mar", "apr", "mai", "iun", "iul", "aug", "sep", "oc
 const dt = (d) => new Date(d + "T12:00:00Z");
 const longDate = (d) => `${ZILE_L[dt(d).getUTCDay()]}, ${dt(d).getUTCDate()} ${LUNI[dt(d).getUTCMonth()]}`;
 const priceTxt = (s) => (s.priceMax && s.priceMax > s.price ? `${s.price}–${s.priceMax} lei` : `${s.price} lei`);
+const fromTxt = (s) => (s.priceMax && s.priceMax > s.price ? `de la ${s.price} lei` : `${s.price} lei`);
+const priceAt = (svc, barberId) => svc.prices?.[barberId] ?? svc.price;
+// prețul pentru frizerul ales; la „Oricine” rămâne intervalul
+const chosenPrice = () => (st.barber && st.barber !== "any" ? `${priceAt(st.service, st.barber)} lei` : `${priceTxt(st.service)}, în funcție de frizer`);
 const initials = (n) => n.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
 
@@ -371,15 +378,22 @@ function renderInfo() {
   $("#services").innerHTML = S.services.map((s) => `
     <button class="opt" data-svc="${esc(s.id)}">
       <span class="t"><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></span>
-      <span class="meta"><b>${priceTxt(s)}</b>${s.duration} min</span>
+      <span class="meta"><b>${fromTxt(s)}</b>${s.duration} min</span>
     </button>`).join("");
-  $("#prices").innerHTML = S.services.map((s) => `
-    <div class="price"><span class="t">${esc(s.name)}<small>${esc(s.desc)} · ${s.duration} min</small></span><span class="dots"></span><b>${priceTxt(s)}</b></div>`).join("");
+  $("#prices").innerHTML = S.services.map((s) => {
+    const per = s.priceMax > s.price ? S.barbers.map((b) => `${esc(b.name)} ${priceAt(s, b.id)}`).join(" · ") + " lei" : "";
+    return `<div class="price"><span class="t">${esc(s.name)}<small>${esc(s.desc)} · ${s.duration} min</small>${per ? `<small class="per">${per}</small>` : ""}</span><span class="dots"></span><b>${priceTxt(s)}</b></div>`;
+  }).join("");
   $("#team").innerHTML = S.barbers.map((b) => `
     <div class="member"><span class="av">${esc(initials(b.name))}</span><span><b>${esc(b.name)}</b><small>${esc(daysLabel(b.days))}</small></span></div>`).join("");
+}
+
+// cardurile de frizeri, cu prețul fiecăruia pentru serviciul ales
+function renderBarbers() {
+  const svc = st.service;
   $("#barbers").innerHTML = `
-    <button class="opt barber" data-barber="any"><span class="av any">✦</span><span><b>Oricine e liber</b><br><small>Cele mai multe ore</small></span></button>` +
-    S.barbers.map((b) => `<button class="opt barber" data-barber="${esc(b.id)}"><span class="av">${esc(initials(b.name))}</span><span><b>${esc(b.name)}</b><br><small>${esc(daysLabel(b.days))}</small></span></button>`).join("");
+    <button class="opt barber ${st.barber === "any" ? "sel" : ""}" data-barber="any"><span class="av any">✦</span><span><b>Oricine e liber</b><br><small>Cele mai multe ore</small></span>${svc ? `<span class="bp">${priceTxt(svc)}</span>` : ""}</button>` +
+    S.barbers.map((b) => `<button class="opt barber ${st.barber === b.id ? "sel" : ""}" data-barber="${esc(b.id)}"><span class="av">${esc(initials(b.name))}</span><span><b>${esc(b.name)}</b><br><small>${esc(daysLabel(b.days))}</small></span>${svc ? `<span class="bp">${priceAt(svc, b.id)} lei</span>` : ""}</button>`).join("");
 }
 
 $("#services").addEventListener("click", (e) => {
@@ -387,7 +401,9 @@ $("#services").addEventListener("click", (e) => {
   st.service = S.services.find((s) => s.id === b.dataset.svc);
   st.date = st.time = null;
   document.querySelectorAll("[data-svc]").forEach((x) => x.classList.toggle("sel", x === b));
-  $("#s1v").textContent = `${st.service.name} · ${priceTxt(st.service)}`;
+  $("#s1v").textContent = `${st.service.name} · ${fromTxt(st.service)}`;
+  st.barber = null; $("#s2v").textContent = "La cine vrei să mergi?";
+  renderBarbers();
   go(2);
 });
 $("#barbers").addEventListener("click", (e) => {
@@ -395,7 +411,7 @@ $("#barbers").addEventListener("click", (e) => {
   st.barber = b.dataset.barber;
   st.date = st.time = null;
   document.querySelectorAll("[data-barber]").forEach((x) => x.classList.toggle("sel", x === b));
-  $("#s2v").textContent = st.barber === "any" ? "Oricine e liber" : barberName(st.barber);
+  $("#s2v").textContent = st.barber === "any" ? `Oricine e liber · ${priceTxt(st.service)}` : `${barberName(st.barber)} · ${priceAt(st.service, st.barber)} lei`;
   go(3);
 });
 const barberName = (id) => S.barbers.find((b) => b.id === id)?.name || id;
@@ -448,7 +464,7 @@ function renderSummary() {
     <div><span>Serviciu</span><b>${esc(st.service.name)}</b></div>
     <div><span>Frizer</span><b>${st.barber === "any" ? "Oricine e liber" : esc(barberName(st.barber))}</b></div>
     <div><span>Când</span><b>${longDate(st.date)}, ${st.time}</b></div>
-    <div><span>Preț</span><b>${priceTxt(st.service)}</b></div>`;
+    <div><span>Preț</span><b>${chosenPrice()}</b></div>`;
   const f = $("#form");
   if (!f.name.value) f.name.value = store.get("nl_name") || "";
   if (!f.phone.value) f.phone.value = store.get("nl_phone") || "";

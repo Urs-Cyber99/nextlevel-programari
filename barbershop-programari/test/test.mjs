@@ -34,7 +34,8 @@ const book = (extra) => call("POST", "/api/book", { date: d, time: "10:00", serv
 r = await book();
 assert.equal(r.status, 200, JSON.stringify(r.data));
 const token = r.data.booking.token;
-console.log("✓ programare creată", r.data.booking.start, "-", r.data.booking.end, "SMS:", r.data.sms);
+assert.equal(r.data.booking.price, 70, "Andi = prețul minim");
+console.log("✓ programare creată", r.data.booking.start, "-", r.data.booking.end, "SMS:", r.data.sms, "| preț la Andi:", r.data.booking.price);
 
 r = await book({ phone: "0733000111", name: "Vasile" });
 assert.equal(r.status, 409);
@@ -50,7 +51,16 @@ r = await book({ phone: "0733000111", name: "Vasile", time: "10:00", barber: "an
 assert.equal(r.status, 409, "același telefon, aceeași zi");
 r = await book({ phone: "0744000222", name: "Mihai", time: "10:00", barber: "any" });
 assert.notEqual(r.data.booking.barber, "andi");
-console.log("✓ «oricine» alege frizerul liber:", r.data.booking.barberName);
+const exp = { lazarescu: 90, radu: 110, ionita: 110 }[r.data.booking.barber];
+assert.equal(r.data.booking.price, exp);
+console.log("✓ «oricine» alege frizerul liber:", r.data.booking.barberName, r.data.booking.price, "lei");
+
+// prețuri pe frizer în setările publice: Andi < Lazarescu < Radu = Ionita
+r = await call("GET", "/api/settings");
+const tb = r.data.services.find((x) => x.id === "tuns-barbati");
+assert.deepEqual(tb.prices, { andi: 50, radu: 100, lazarescu: 75, ionita: 100 });
+assert.equal(tb.price, 50); assert.equal(tb.priceMax, 100);
+console.log("✓ prețuri pe frizer (Tuns bărbați):", JSON.stringify(tb.prices));
 
 r = await call("GET", `/api/slots?date=${d}&service=tuns-clasic&barber=any`);
 assert.ok(r.data.slots.find((s) => s.time === "10:00").barbers.length === 2, "10:00: 2 din 4 frizeri ocupați");
@@ -95,6 +105,7 @@ r = await call("GET", `/api/admin/day?date=${d}`, null, true);
 const andrei = r.data.bookings.find((b) => b.name === "Andrei");
 r = await call("POST", "/api/admin/edit", { date: d, id: andrei.id, time: "15:00", barber: "radu" }, true);
 assert.equal(r.status, 200);
+assert.equal(r.data.booking.price, 110, "mutat la Radu -> prețul lui Radu");
 r = await call("POST", "/api/admin/status", { date: d, id: andrei.id, status: "done" }, true);
 r = await call("GET", "/api/admin/clients", null, true);
 assert.equal(r.data.clients["0766000444"].visits, 1);
@@ -109,6 +120,14 @@ r = await call("POST", "/api/admin/settings", { salonName: "Test Barber", servic
 assert.equal(r.status, 200);
 assert.equal(r.data.settings.services[1].id, "ceara-nas");
 console.log("✓ setări salvate (servicii noi)");
+
+r = await call("POST", "/api/admin/settings", { services: [{ id: "tuns-clasic", name: "Tuns", duration: 30, price: 40, prices: { andi: 45, radu: 70, lazarescu: 55, ionita: 70 } }] }, true);
+assert.equal(r.status, 200);
+assert.equal(r.data.settings.services[0].price, 45);
+assert.equal(r.data.settings.services[0].priceMax, 70);
+r = await call("POST", "/api/book", { date: d, time: "16:30", serviceId: "tuns-clasic", barber: "lazarescu", name: "Pret Test", phone: "0711222333", consent: true });
+assert.equal(r.data.booking.price, 55);
+console.log("✓ prețuri schimbate din admin se aplică la programare (Lazarescu 55 lei)");
 
 // zile de lucru pe frizer: Ionita doar vineri-sâmbătă
 const cur = (await call("GET", "/api/admin/check", null, true)).data.settings;

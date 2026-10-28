@@ -2,7 +2,7 @@ import { getDb, mutate, HttpError } from "../lib/store.mjs";
 import {
   loadSettings, publicSettings, freeSlots, isFree, emptyDay, dayKey, occupies,
   nowLocal, addDays, dow, toMin, fromMin, isDate, isTime, normPhone, cleanText, newId,
-  touchClient, pruneUpcoming, worksOn, smsBooking, notifyBarber, fillTemplate, DEFAULT_SETTINGS,
+  touchClient, pruneUpcoming, worksOn, priceFor, withRange, smsBooking, notifyBarber, fillTemplate, DEFAULT_SETTINGS,
 } from "../lib/core.mjs";
 import { sendSms, smsConfigured } from "../lib/sms.mjs";
 
@@ -127,7 +127,7 @@ async function createBooking(db, s, input, admin) {
       throw new HttpError(409, "Ai deja o programare în ziua asta.");
     const b = {
       id, token, date, barber, start: time, end: fromMin(end),
-      serviceId: svc.id, serviceName: svc.name, price: svc.price, priceMax: svc.priceMax || svc.price, duration,
+      serviceId: svc.id, serviceName: svc.name, price: priceFor(svc, barber), priceMax: priceFor(svc, barber), duration,
       name, phone: phone || "", note: cleanText(input.note, 200),
       status: "confirmed", source: admin ? "salon" : "online",
       createdAt: new Date().toISOString(),
@@ -278,11 +278,16 @@ async function adminRoute(path, method, q, body, db, s) {
       const nb = {
         ...orig, date: newDate, start: time, end: fromMin(toMin(time) + duration), duration,
         barber: body.barber || orig.barber,
-        ...(svc ? { serviceId: svc.id, serviceName: svc.name, price: svc.price, priceMax: svc.priceMax || svc.price } : {}),
+        ...(svc ? { serviceId: svc.id, serviceName: svc.name } : {}),
         ...(body.note !== undefined ? { note: cleanText(body.note, 200) } : {}),
         ...(body.name ? { name: cleanText(body.name, 50) } : {}),
         ...(body.phone !== undefined ? { phone: normPhone(body.phone) || "" } : {}),
       };
+      // prețul se recalculează dacă s-a schimbat frizerul sau serviciul
+      if (svc || nb.barber !== orig.barber) {
+        const sv = svc || s.services.find((x) => x.id === orig.serviceId);
+        if (sv) nb.price = nb.priceMax = priceFor(sv, nb.barber);
+      }
       if (newDate !== orig.date || time !== orig.start) nb.reminderSent = false;
       const tomorrow = addDays(nowLocal().date, 1);
       if (nb.date <= nowLocal().date || (nb.date === tomorrow && nowLocal().min >= 600)) nb.reminderSent = true;
@@ -405,7 +410,12 @@ function sanitizeSettings(b, cur) {
       while (seen.has(id)) id += "-2";
       seen.add(id);
       const price = int(x.price, 0, 100000, 0);
-      return { id, name, desc: str(x.desc, 120, ""), duration: int(x.duration, 5, 480, 30), price, priceMax: Math.max(price, int(x.priceMax, 0, 100000, price)), active: x.active !== false };
+      const prices = {};
+      for (const b of out.barbers) {
+        const v = x.prices?.[b.id];
+        if (v !== undefined && v !== null && v !== "" && Number.isFinite(+v)) prices[b.id] = int(v, 0, 100000, price);
+      }
+      return withRange(out, { id, name, desc: str(x.desc, 120, ""), duration: int(x.duration, 5, 480, 30), price, priceMax: Math.max(price, int(x.priceMax, 0, 100000, price)), prices, active: x.active !== false });
     }).filter((x) => x.name);
     if (!out.services.length) throw new HttpError(400, "Trebuie cel puțin un serviciu");
   }
