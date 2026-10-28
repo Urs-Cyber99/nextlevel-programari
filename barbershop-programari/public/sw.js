@@ -1,5 +1,5 @@
 // Service worker: face site-ul instalabil și rapid. Programările (/api) nu se pun niciodată în cache.
-const VERSION = "nl-v1";
+const VERSION = "nl-v2";
 const SHELL = ["/", "/index.html", "/admin.html", "/anulare.html", "/manifest.webmanifest", "/manifest-admin.webmanifest",
   "/icons/icon-192.png", "/icons/admin-192.png", "/img/salon-hero.jpg"];
 

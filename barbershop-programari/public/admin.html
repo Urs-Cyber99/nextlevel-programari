@@ -40,13 +40,13 @@ label.f>span{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .hidden{display:none!important}
 
 /* login */
-#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+#login{min-height:100vh;display:grid;place-items:center;padding:calc(20px + env(safe-area-inset-top)) 20px 20px}
 #login form{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 22px;display:grid;gap:14px;text-align:center}
 #login .mono{width:52px;height:52px;margin:0 auto;font-size:18px}
 #login h1{font:700 22px Cinzel,serif;letter-spacing:.05em}
 
 /* app */
-header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 .bar{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
 .bar b{font:700 15px Cinzel,serif;letter-spacing:.08em}
 .tabs{display:flex;gap:4px;margin-left:auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:3px}

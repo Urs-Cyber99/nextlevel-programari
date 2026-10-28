@@ -27,7 +27,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+html{scroll-padding-top:calc(70px + env(safe-area-inset-top));scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font:16px/1.5 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
@@ -35,7 +35,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .serif{font-family:Cinzel,serif;letter-spacing:.06em}
 
 /* header */
-header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:20;background:rgba(11,11,12,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 header .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
 .mono{width:38px;height:38px;display:grid;place-items:center;font:700 15px Cinzel,serif;
@@ -70,7 +70,7 @@ h2{font:700 clamp(26px,5vw,38px)/1.1 Cinzel,serif;letter-spacing:.05em;margin-bo
 
 /* booking */
 .book{background:var(--panel);border:1px solid var(--line);border-radius:22px;overflow:hidden}
-.step{border-bottom:1px solid var(--line);scroll-margin-top:76px}
+.step{border-bottom:1px solid var(--line);scroll-margin-top:calc(76px + env(safe-area-inset-top))}
 .step:last-child{border-bottom:0}
 .step-h{display:flex;align-items:center;gap:14px;padding:18px 20px;width:100%;text-align:left}
 .num{flex:none;width:30px;height:30px;display:grid;place-items:center;font-size:13px;font-weight:700;
